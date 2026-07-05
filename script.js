@@ -1,11 +1,45 @@
 var character = document.querySelector(".character");
 var map = document.querySelector(".map");
+var mapItem = document.querySelector(".map-item");
+var gameMessage = document.querySelector(".game-message");
 
 //start in the middle of the map
 var x = 90;
 var y = 34;
 var held_directions = []; //State of which arrow keys we are holding down
 var speed = 1; //How fast the character moves in pixels per frame
+var spaceHeld = false;
+var hasAiphItem = false;
+var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
+var cloneSpread = 0; //current animated distance from the player
+var cloneSpreadSpeed = 2.5; //units per frame
+var tileSize = 16;
+var itemX = x + tileSize / 2 - 1; //centered like the 2x2 character
+var itemY = y + tileSize / 2 + tileSize * 5 + 3; //5 tiles below character start
+var messageTimeout = null;
+
+const showGameMessage = (text) => {
+   gameMessage.textContent = text;
+   gameMessage.hidden = false;
+   gameMessage.classList.add("visible");
+   clearTimeout(messageTimeout);
+   messageTimeout = setTimeout(() => {
+      gameMessage.classList.remove("visible");
+      setTimeout(() => {
+         gameMessage.hidden = true;
+      }, 200);
+   }, 2200);
+};
+
+const createClone = () => {
+   var clone = character.cloneNode(true);
+   clone.classList.add("clone");
+   map.appendChild(clone);
+   return clone;
+};
+
+var cloneLeft = createClone();
+var cloneRight = createClone();
 
 const placeCharacter = () => {
    
@@ -38,7 +72,42 @@ const placeCharacter = () => {
    var camera_top = pixelSize * 42;
    
    map.style.transform = `translate3d( ${-x*pixelSize+camera_left}px, ${-y*pixelSize+camera_top}px, 0 )`;
-   character.style.transform = `translate3d( ${x*pixelSize}px, ${y*pixelSize}px, 0 )`;  
+   character.style.transform = `translate3d( ${x*pixelSize}px, ${y*pixelSize}px, 0 )`;
+
+   if (!hasAiphItem && mapItem) {
+      const pickupDistance = tileSize * 1.25;
+      if (
+         Math.abs(x - itemX) < pickupDistance &&
+         Math.abs(y - itemY) < pickupDistance
+      ) {
+         hasAiphItem = true;
+         mapItem.classList.add("collected");
+      }
+   }
+
+   const targetSpread = (spaceHeld && hasAiphItem) ? cloneSpreadMax : 0;
+   if (cloneSpread < targetSpread) {
+      cloneSpread = Math.min(cloneSpread + cloneSpreadSpeed, targetSpread);
+   } else if (cloneSpread > targetSpread) {
+      cloneSpread = Math.max(cloneSpread - cloneSpreadSpeed, targetSpread);
+   }
+
+   const facing = character.getAttribute("facing");
+   const walking = character.getAttribute("walking");
+   const clonesVisible = cloneSpread > 0;
+   const placeClone = (clone, offsetX) => {
+      clone.classList.toggle("active", clonesVisible);
+      if (!clonesVisible) return;
+      clone.setAttribute("facing", facing);
+      clone.setAttribute("walking", walking);
+      clone.style.transform = `translate3d( ${(x + offsetX)*pixelSize}px, ${y*pixelSize}px, 0 )`;
+   };
+   placeClone(cloneLeft, -cloneSpread);
+   placeClone(cloneRight, cloneSpread);
+
+   if (mapItem && !hasAiphItem) {
+      mapItem.style.transform = `translate3d( ${itemX*pixelSize}px, ${itemY*pixelSize}px, 0 )`;
+   }
 }
 
 
@@ -67,6 +136,15 @@ const keys = {
    40: directions.down,
 }
 document.addEventListener("keydown", (e) => {
+   if (e.code === "Space" || e.key === " ") {
+      e.preventDefault();
+      if (!hasAiphItem) {
+         showGameMessage("Zdobądź AIPH!");
+         return;
+      }
+      spaceHeld = true;
+      return;
+   }
    var dir = keys[e.which];
    if (dir && held_directions.indexOf(dir) === -1) {
       held_directions.unshift(dir)
@@ -74,6 +152,10 @@ document.addEventListener("keydown", (e) => {
 })
 
 document.addEventListener("keyup", (e) => {
+   if (e.code === "Space" || e.key === " ") {
+      spaceHeld = false;
+      return;
+   }
    var dir = keys[e.which];
    var index = held_directions.indexOf(dir);
    if (index > -1) {
