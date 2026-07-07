@@ -57,13 +57,114 @@ const createClone = () => {
 var cloneLeft = createClone();
 var cloneRight = createClone();
 
+/* Direction key state */
+const directions = {
+   up: "up",
+   down: "down",
+   left: "left",
+   right: "right",
+};
+const keys = {
+   38: directions.up,
+   37: directions.left,
+   39: directions.right,
+   40: directions.down,
+};
+
+/* Xbox / gamepad: A = Enter, B = Space, lewy analog + D-pad = ruch */
+const STICK_DEADZONE = 0.35;
+const GAMEPAD_BUTTONS = {
+   a: 0,
+   b: 1,
+   dpadUp: 12,
+   dpadDown: 13,
+   dpadLeft: 14,
+   dpadRight: 15,
+};
+var gamepadDirection = null;
+var gamepadSpaceHeld = false;
+var gamepadButtonState = {};
+var gamepadActive = false;
+
+const directionFromStick = (stickX, stickY) => {
+   if (Math.abs(stickX) < STICK_DEADZONE && Math.abs(stickY) < STICK_DEADZONE) {
+      return null;
+   }
+   if (Math.abs(stickX) > Math.abs(stickY)) {
+      return stickX < 0 ? directions.left : directions.right;
+   }
+   return stickY < 0 ? directions.up : directions.down;
+};
+
+const pollGamepad = () => {
+   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+   const pad = pads.find((p) => p && p.connected);
+
+   if (!pad) {
+      gamepadDirection = null;
+      gamepadSpaceHeld = false;
+      gamepadButtonState = {};
+      gamepadActive = false;
+      return;
+   }
+
+   const stickX = pad.axes[0] || 0;
+   const stickY = pad.axes[1] || 0;
+   const stickMoved =
+      Math.abs(stickX) > STICK_DEADZONE ||
+      Math.abs(stickY) > STICK_DEADZONE;
+   const dpadPressed =
+      pad.buttons[GAMEPAD_BUTTONS.dpadUp]?.pressed ||
+      pad.buttons[GAMEPAD_BUTTONS.dpadDown]?.pressed ||
+      pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed ||
+      pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
+   const anyButtonPressed = pad.buttons.some((button) => button?.pressed);
+
+   if (anyButtonPressed || dpadPressed || stickMoved) {
+      gamepadActive = true;
+   }
+   if (!gamepadActive) {
+      gamepadDirection = null;
+      gamepadSpaceHeld = false;
+      return;
+   }
+
+   let dir = null;
+   if (pad.buttons[GAMEPAD_BUTTONS.dpadUp]?.pressed) dir = directions.up;
+   else if (pad.buttons[GAMEPAD_BUTTONS.dpadDown]?.pressed) dir = directions.down;
+   else if (pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed) dir = directions.left;
+   else if (pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed) dir = directions.right;
+   else dir = directionFromStick(stickX, stickY);
+
+   gamepadDirection = dir;
+
+   const bPressed = !!pad.buttons[GAMEPAD_BUTTONS.b]?.pressed;
+   if (bPressed && !gamepadSpaceHeld && !hasAiphItem) {
+      showGameMessage("Zdobądź AIPH!");
+   }
+   gamepadSpaceHeld = bPressed;
+
+   const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
+   const wasAPressed = !!gamepadButtonState.a;
+   if (aPressed && !wasAPressed) {
+      document.dispatchEvent(new KeyboardEvent("keydown", { code: "Enter", key: "Enter", bubbles: true }));
+   } else if (!aPressed && wasAPressed) {
+      document.dispatchEvent(new KeyboardEvent("keyup", { code: "Enter", key: "Enter", bubbles: true }));
+   }
+   gamepadButtonState.a = aPressed;
+};
+
+window.addEventListener("gamepadconnected", () => {
+   gamepadActive = false;
+});
+
 const placeCharacter = () => {
    
-   var pixelSize = parseInt(
+   var pixelSize = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--pixel-size')
-   );
+   ) || 2;
    
-   const held_direction = held_directions[0];
+   const held_direction = gamepadDirection || held_directions[0];
    if (held_direction) {
       if (held_direction === directions.right) {x += speed;}
       if (held_direction === directions.left) {x -= speed;}
@@ -102,7 +203,7 @@ const placeCharacter = () => {
       }
    }
 
-   const targetSpread = (spaceHeld && hasAiphItem) ? cloneSpreadMax : 0;
+   const targetSpread = ((spaceHeld || gamepadSpaceHeld) && hasAiphItem) ? cloneSpreadMax : 0;
    if (cloneSpread < targetSpread) {
       cloneSpread = Math.min(cloneSpread + cloneSpreadSpeed, targetSpread);
    } else if (cloneSpread > targetSpread) {
@@ -128,59 +229,49 @@ const placeCharacter = () => {
 }
 
 
-//Set up the game loop
-const step = () => {
-   placeCharacter();
-   window.requestAnimationFrame(() => {
-      step();
-   })
-}
-step(); //kick off the first step!
+const setSpaceHeld = (held) => {
+   if (held && !hasAiphItem) {
+      showGameMessage("Zdobądź AIPH!");
+      return;
+   }
+   spaceHeld = held;
+};
 
+const pressDirection = (dir) => {
+   if (dir && held_directions.indexOf(dir) === -1) {
+      held_directions.unshift(dir);
+   }
+};
 
+const releaseDirection = (dir) => {
+   const index = held_directions.indexOf(dir);
+   if (index > -1) {
+      held_directions.splice(index, 1);
+   }
+};
 
-/* Direction key state */
-const directions = {
-   up: "up",
-   down: "down",
-   left: "left",
-   right: "right",
-}
-const keys = {
-   38: directions.up,
-   37: directions.left,
-   39: directions.right,
-   40: directions.down,
-}
 document.addEventListener("keydown", (e) => {
    if (e.code === "Space" || e.key === " ") {
       e.preventDefault();
-      if (!hasAiphItem) {
-         showGameMessage("Zdobądź AIPH!");
-         return;
-      }
-      spaceHeld = true;
+      setSpaceHeld(true);
+      return;
+   }
+   if (e.code === "Enter") {
+      e.preventDefault();
       return;
    }
    var dir = keys[e.which];
-   if (dir && held_directions.indexOf(dir) === -1) {
-      held_directions.unshift(dir)
-   }
+   pressDirection(dir);
 })
 
 document.addEventListener("keyup", (e) => {
    if (e.code === "Space" || e.key === " ") {
-      spaceHeld = false;
+      setSpaceHeld(false);
       return;
    }
    var dir = keys[e.which];
-   var index = held_directions.indexOf(dir);
-   if (index > -1) {
-      held_directions.splice(index, 1)
-   }
+   releaseDirection(dir);
 });
-
-
 
 /* BONUS! Dpad functionality for mouse and touch */
 var isPressed = false;
@@ -225,3 +316,11 @@ document.querySelector(".dpad-left").addEventListener("mouseover", (e) => handle
 document.querySelector(".dpad-up").addEventListener("mouseover", (e) => handleDpadPress(directions.up));
 document.querySelector(".dpad-right").addEventListener("mouseover", (e) => handleDpadPress(directions.right));
 document.querySelector(".dpad-down").addEventListener("mouseover", (e) => handleDpadPress(directions.down));
+
+//Set up the game loop
+const step = () => {
+   pollGamepad();
+   placeCharacter();
+   window.requestAnimationFrame(step);
+};
+step();
