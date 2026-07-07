@@ -1,7 +1,7 @@
 :root {
    --pixel-size: 2px;
    --grid-cell: calc( var(--pixel-size) * 16);
-   --bg: #9fa7e4;
+   --bg: #b8e4ff;
 }
 @media( min-width: 700px ) {
    :root {
@@ -488,4 +488,66 @@ body {
 
 .hud-mp .hud-pixel.filled {
    background-color: #4a9ee8;
+}
+
+.start-overlay {
+   position: absolute;
+   inset: 0;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: calc(var(--pixel-size) * 10);
+   background: rgba(26, 28, 58, 0.88);
+   z-index: 6;
+   transition: opacity 0.4s ease;
+}
+
+.start-overlay.hidden {
+   opacity: 0;
+   pointer-events: none;
+}
+
+.start-title-block {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: calc(var(--pixel-size) * 4);
+   margin-top: calc(var(--pixel-size) * 144 * 0.2);
+}
+
+.start-title-image {
+   width: calc(var(--pixel-size) * 150);
+   height: auto;
+   image-rendering: pixelated;
+}
+
+.start-prompt {
+   margin: auto 0 calc(var(--pixel-size) * 6);
+   font-family: 'Press Start 2P', cursive;
+   font-size: calc(var(--pixel-size) * 2.5);
+   line-height: 1.6;
+   color: #f5f5f5;
+   text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
+   -webkit-animation: startBlink 1s steps(2, start) infinite;
+           animation: startBlink 1s steps(2, start) infinite;
+}
+
+.start-aiph {
+   width: calc(var(--grid-cell) * 2.5);
+   height: calc(var(--grid-cell) * 2.5);
+   background: url("./assets/AIPH.png") no-repeat center;
+   background-size: contain;
+   -webkit-animation: itemLevitate 2.4s ease-in-out infinite;
+           animation: itemLevitate 2.4s ease-in-out infinite;
+}
+
+@-webkit-keyframes startBlink {
+   0%, 100% { opacity: 1; }
+   50% { opacity: 0; }
+}
+
+@keyframes startBlink {
+   0%, 100% { opacity: 1; }
+   50% { opacity: 0; }
 }

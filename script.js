@@ -3,6 +3,8 @@ var map = document.querySelector(".map");
 var mapItem = document.querySelector(".map-item");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
+var startOverlay = document.querySelector(".start-overlay");
+var gameStarted = false;
 
 //start in the middle of the map
 var x = 90;
@@ -19,6 +21,15 @@ var itemX = x + tileSize / 2 - 1; //centered like the 2x2 character
 var itemY = y + tileSize / 2 + tileSize * 5 + 3; //5 tiles below character start
 var messageTimeout = null;
 var victoryTimeout = null;
+
+const startGame = () => {
+   if (gameStarted) return;
+   gameStarted = true;
+   startOverlay.classList.add("hidden");
+   setTimeout(() => {
+      startOverlay.remove();
+   }, 400);
+};
 
 const showVictoryMessage = () => {
    victoryOverlay.hidden = false;
@@ -146,7 +157,11 @@ const pollGamepad = () => {
 
    const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
    const wasAPressed = !!gamepadButtonState.a;
-   if (aPressed && !wasAPressed) {
+   if (!gameStarted) {
+      if (aPressed && !wasAPressed) {
+         startGame();
+      }
+   } else if (aPressed && !wasAPressed) {
       document.dispatchEvent(new KeyboardEvent("keydown", { code: "Enter", key: "Enter", bubbles: true }));
    } else if (!aPressed && wasAPressed) {
       document.dispatchEvent(new KeyboardEvent("keyup", { code: "Enter", key: "Enter", bubbles: true }));
@@ -251,6 +266,13 @@ const releaseDirection = (dir) => {
 };
 
 document.addEventListener("keydown", (e) => {
+   if (!gameStarted) {
+      if (e.code === "Enter" || e.code === "Space" || e.key === " ") {
+         e.preventDefault();
+         startGame();
+      }
+      return;
+   }
    if (e.code === "Space" || e.key === " ") {
       e.preventDefault();
       setSpaceHeld(true);
@@ -264,7 +286,10 @@ document.addEventListener("keydown", (e) => {
    pressDirection(dir);
 })
 
+startOverlay.addEventListener("click", startGame);
+
 document.addEventListener("keyup", (e) => {
+   if (!gameStarted) return;
    if (e.code === "Space" || e.key === " ") {
       setSpaceHeld(false);
       return;
@@ -317,10 +342,14 @@ document.querySelector(".dpad-up").addEventListener("mouseover", (e) => handleDp
 document.querySelector(".dpad-right").addEventListener("mouseover", (e) => handleDpadPress(directions.right));
 document.querySelector(".dpad-down").addEventListener("mouseover", (e) => handleDpadPress(directions.down));
 
+placeCharacter();
+
 //Set up the game loop
 const step = () => {
    pollGamepad();
-   placeCharacter();
+   if (gameStarted) {
+      placeCharacter();
+   }
    window.requestAnimationFrame(step);
 };
 step();
