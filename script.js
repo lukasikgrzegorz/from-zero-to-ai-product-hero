@@ -2,6 +2,7 @@ var character = document.querySelector(".character");
 var map = document.querySelector(".map");
 var mapItem = document.querySelector(".map-item");
 var gameMessage = document.querySelector(".game-message");
+var victoryOverlay = document.querySelector(".victory-overlay");
 
 //start in the middle of the map
 var x = 90;
@@ -17,6 +18,21 @@ var tileSize = 16;
 var itemX = x + tileSize / 2 - 1; //centered like the 2x2 character
 var itemY = y + tileSize / 2 + tileSize * 5 + 3; //5 tiles below character start
 var messageTimeout = null;
+var victoryTimeout = null;
+
+const showVictoryMessage = () => {
+   victoryOverlay.hidden = false;
+   requestAnimationFrame(() => {
+      victoryOverlay.classList.add("visible");
+   });
+   clearTimeout(victoryTimeout);
+   victoryTimeout = setTimeout(() => {
+      victoryOverlay.classList.remove("visible");
+      setTimeout(() => {
+         victoryOverlay.hidden = true;
+      }, 350);
+   }, 3600);
+};
 
 const showGameMessage = (text) => {
    gameMessage.textContent = text;
@@ -82,6 +98,7 @@ const placeCharacter = () => {
       ) {
          hasAiphItem = true;
          mapItem.classList.add("collected");
+         showVictoryMessage();
       }
    }
 
