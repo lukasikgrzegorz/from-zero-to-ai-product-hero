@@ -150,9 +150,6 @@ const pollGamepad = () => {
    gamepadDirection = dir;
 
    const bPressed = !!pad.buttons[GAMEPAD_BUTTONS.b]?.pressed;
-   if (bPressed && !gamepadSpaceHeld && !hasAiphItem) {
-      showGameMessage("Zdobądź AIPH!");
-   }
    gamepadSpaceHeld = bPressed;
 
    const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
@@ -245,10 +242,7 @@ const placeCharacter = () => {
 
 
 const setSpaceHeld = (held) => {
-   if (held && !hasAiphItem) {
-      showGameMessage("Zdobądź AIPH!");
-      return;
-   }
+   if (held && !hasAiphItem) return;
    spaceHeld = held;
 };
 
