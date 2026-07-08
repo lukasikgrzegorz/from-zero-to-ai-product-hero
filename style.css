@@ -312,9 +312,13 @@ body {
            animation: itemLevitate 2.4s ease-in-out infinite;
 }
 
-.map-item--aiph .item_sprite {
+.map-item--aiph .item_sprite,
+.map-item--aiph2 .item_sprite,
+.map-item--aiph3 .item_sprite {
    background-image: url("./assets/AIPH.png");
    background-repeat: no-repeat;
+   -webkit-animation: itemLevitate 2.4s ease-in-out infinite, aiphShimmer 2.8s steps(4, end) infinite;
+           animation: itemLevitate 2.4s ease-in-out infinite, aiphShimmer 2.8s steps(4, end) infinite;
 }
 
 .map-item--brush .item_sprite {
@@ -507,6 +511,13 @@ body {
    text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
 }
 
+.victory-hint--skill {
+   font-size: calc(var(--pixel-size) * 3.5);
+   line-height: 1.5;
+   color: #b8f4ff;
+   text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
+}
+
 @-webkit-keyframes victoryIconPop {
    0% {
       transform: scale(0) rotate(-12deg);
@@ -678,6 +689,171 @@ body {
    background-size: contain;
    -webkit-animation: itemLevitate 2.4s ease-in-out infinite;
            animation: itemLevitate 2.4s ease-in-out infinite;
+}
+
+.aiph-glow {
+   position: relative;
+}
+
+.aiph-sparkles {
+   position: absolute;
+   inset: calc(var(--pixel-size) * -5);
+   pointer-events: none;
+   z-index: 2;
+}
+
+.aiph-spark {
+   position: absolute;
+   width: var(--pixel-size);
+   height: var(--pixel-size);
+   background: #fff;
+   opacity: 0;
+   -webkit-animation: aiphSparkFlicker 1.4s steps(2, start) infinite;
+           animation: aiphSparkFlicker 1.4s steps(2, start) infinite;
+}
+
+.aiph-spark:nth-child(1) {
+   left: 8%;
+   top: 12%;
+   background: #ffe566;
+   -webkit-animation-delay: 0s;
+           animation-delay: 0s;
+}
+
+.aiph-spark:nth-child(2) {
+   right: 6%;
+   top: 8%;
+   background: #d4d4d8;
+   -webkit-animation: aiphSparkFloat 2.2s steps(3, end) infinite;
+           animation: aiphSparkFloat 2.2s steps(3, end) infinite;
+   -webkit-animation-delay: 0.3s;
+           animation-delay: 0.3s;
+}
+
+.aiph-spark:nth-child(3) {
+   left: 2%;
+   top: 42%;
+   width: calc(var(--pixel-size) * 2);
+   height: calc(var(--pixel-size) * 2);
+   background: #fff;
+   -webkit-animation-delay: 0.7s;
+           animation-delay: 0.7s;
+}
+
+.aiph-spark:nth-child(4) {
+   right: 2%;
+   top: 38%;
+   background: #c0c0c0;
+   -webkit-animation-delay: 1.1s;
+           animation-delay: 1.1s;
+}
+
+.aiph-spark:nth-child(5) {
+   left: 18%;
+   bottom: 10%;
+   background: #fff;
+   -webkit-animation: aiphSparkFloat 1.8s steps(3, end) infinite;
+           animation: aiphSparkFloat 1.8s steps(3, end) infinite;
+   -webkit-animation-delay: 0.5s;
+           animation-delay: 0.5s;
+}
+
+.aiph-spark:nth-child(6) {
+   right: 14%;
+   bottom: 14%;
+   width: calc(var(--pixel-size) * 2);
+   height: var(--pixel-size);
+   background: #ffd700;
+   -webkit-animation-delay: 0.2s;
+           animation-delay: 0.2s;
+}
+
+.aiph-spark:nth-child(7) {
+   left: 44%;
+   top: 0;
+   background: #e8e8e8;
+   -webkit-animation-delay: 0.9s;
+           animation-delay: 0.9s;
+}
+
+.aiph-spark:nth-child(8) {
+   right: 38%;
+   bottom: 4%;
+   background: #ffe566;
+   -webkit-animation: aiphSparkFloat 2.6s steps(3, end) infinite;
+           animation: aiphSparkFloat 2.6s steps(3, end) infinite;
+   -webkit-animation-delay: 1.4s;
+           animation-delay: 1.4s;
+}
+
+@-webkit-keyframes aiphShimmer {
+   0%, 100% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 2) #fff) brightness(1);
+   }
+   25% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 4) #ffd700) brightness(1.1);
+   }
+   50% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 3) #ffe566) brightness(1.08);
+   }
+   75% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 5) #c0c0c0) brightness(1.12);
+   }
+}
+
+@keyframes aiphShimmer {
+   0%, 100% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 2) #fff) brightness(1);
+   }
+   25% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 4) #ffd700) brightness(1.1);
+   }
+   50% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 3) #ffe566) brightness(1.08);
+   }
+   75% {
+      filter: drop-shadow(0 0 calc(var(--pixel-size) * 5) #c0c0c0) brightness(1.12);
+   }
+}
+
+@-webkit-keyframes aiphSparkFlicker {
+   0%, 100% { opacity: 0; }
+   50% { opacity: 1; }
+}
+
+@keyframes aiphSparkFlicker {
+   0%, 100% { opacity: 0; }
+   50% { opacity: 1; }
+}
+
+@-webkit-keyframes aiphSparkFloat {
+   0%, 100% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0);
+   }
+   33% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+   }
+   66% {
+      opacity: 0.5;
+      transform: translate3d(calc(var(--pixel-size) * 2), calc(var(--pixel-size) * -3), 0);
+   }
+}
+
+@keyframes aiphSparkFloat {
+   0%, 100% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0);
+   }
+   33% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+   }
+   66% {
+      opacity: 0.5;
+      transform: translate3d(calc(var(--pixel-size) * 2), calc(var(--pixel-size) * -3), 0);
+   }
 }
 
 @-webkit-keyframes startBlink {

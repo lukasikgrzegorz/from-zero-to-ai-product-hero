@@ -1,6 +1,8 @@
 var character = document.querySelector(".character");
 var map = document.querySelector(".map");
 var mapItemAiph = document.querySelector(".map-item--aiph");
+var mapItemAiph2 = document.querySelector(".map-item--aiph2");
+var mapItemAiph3 = document.querySelector(".map-item--aiph3");
 var mapItemBrush = document.querySelector(".map-item--brush");
 var mapItemHtml = document.querySelector(".map-item--html");
 var mapItemJs = document.querySelector(".map-item--js");
@@ -21,6 +23,8 @@ var held_directions = []; //State of which arrow keys we are holding down
 var speed = 1; //How fast the character moves in pixels per frame
 var spaceHeld = false;
 var hasAiphItem = false;
+var hasAiph2Item = false;
+var hasAiph3Item = false;
 var hasBrushItem = false;
 var hasHtmlItem = false;
 var hasJsItem = false;
@@ -31,6 +35,10 @@ var tileSize = 16;
 var itemCenterOffset = tileSize / 2 - 1; //centered like the 2x2 character
 var aiphX = x + itemCenterOffset;
 var aiphY = y + itemCenterOffset + tileSize * 5 + 3; //5 tiles below character start
+var aiph2X = aiphX;
+var aiph2Y = aiphY + tileSize * 14 + tileSize / 2 - 8; //14.5 tiles below AIPH, 8px up
+var aiph3X = aiphX;
+var aiph3Y = aiph2Y + tileSize * 16; //16 tiles below AIPH 2
 var brushX = x - tileSize + itemCenterOffset; //1 tile left from start
 var brushY = y + tileSize + itemCenterOffset; //1 tile down from start
 var htmlX = x - tileSize * 4 + itemCenterOffset; //4 tiles left from start
@@ -282,9 +290,36 @@ const placeCharacter = () => {
    hasAiphItem = tryPickup(mapItemAiph, hasAiphItem, aiphX, aiphY, () => {
       showVictoryMessage({
          icon: "aiph",
-         title: "AIPH",
-         subtitle: "ZDOBYTY!",
-         hint: "Spacja = kolonizacja",
+         title: "UKOŃCZONO",
+         subtitle: "AIPH EDYCJA 1",
+         hint: "ODBLOKOWANO ULTIMATE SKILL GENERALISTA",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--skill",
+      });
+   });
+
+   hasAiph2Item = tryPickup(mapItemAiph2, hasAiph2Item, aiph2X, aiph2Y, () => {
+      showVictoryMessage({
+         icon: "aiph",
+         title: "UKOŃCZONO",
+         subtitle: "AIPH EDYCJA 2",
+         hint: "ODBLOKOWANO ULTIMATE SKILL NOWE HORYZONTY",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--skill",
+      });
+   });
+
+   hasAiph3Item = tryPickup(mapItemAiph3, hasAiph3Item, aiph3X, aiph3Y, () => {
+      showVictoryMessage({
+         icon: "aiph",
+         title: "ZAPISANY NA",
+         subtitle: "AIPH EDYCJA 3",
+         hint: "START 19.10.2026",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--skill",
       });
    });
 
@@ -354,6 +389,8 @@ const placeCharacter = () => {
    };
 
    placeMapItem(mapItemAiph, hasAiphItem, aiphX, aiphY);
+   placeMapItem(mapItemAiph2, hasAiph2Item, aiph2X, aiph2Y);
+   placeMapItem(mapItemAiph3, hasAiph3Item, aiph3X, aiph3Y);
    placeMapItem(mapItemBrush, hasBrushItem, brushX, brushY);
    placeMapItem(mapItemHtml, hasHtmlItem, htmlX, htmlY);
    placeMapItem(mapItemJs, hasJsItem, jsX, jsY);
