@@ -322,6 +322,16 @@ body {
    background-repeat: no-repeat;
 }
 
+.map-item--html .item_sprite {
+   background-image: url("./assets/HTML.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--js .item_sprite {
+   background-image: url("./assets/JS.png");
+   background-repeat: no-repeat;
+}
+
 @-webkit-keyframes itemLevitate {
    0%, 100% {
       transform: translate3d(0, 0, 0);
@@ -388,7 +398,7 @@ body {
 .victory-panel {
    display: flex;
    flex-direction: column;
-   align-items: center;
+   align-items: stretch;
    gap: calc(var(--pixel-size) * 3);
    padding: calc(var(--pixel-size) * 5) calc(var(--pixel-size) * 4);
    text-align: center;
@@ -400,6 +410,20 @@ body {
       0 0 0 calc(var(--pixel-size) * 2) #1a1c3a;
    transform: scale(0.85);
    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+   box-sizing: border-box;
+   width: calc(var(--pixel-size) * 103);
+   min-width: calc(var(--pixel-size) * 103);
+}
+
+.victory-panel .victory-icon {
+   align-self: center;
+}
+
+.victory-panel .victory-title,
+.victory-panel .victory-subtitle,
+.victory-panel .victory-hint {
+   width: 100%;
+   text-align: center;
 }
 
 .victory-overlay.visible .victory-panel {
@@ -422,6 +446,14 @@ body {
 
 .victory-icon--brush {
    background-image: url("./assets/BRUSH.png");
+}
+
+.victory-icon--html {
+   background-image: url("./assets/HTML.png");
+}
+
+.victory-icon--js {
+   background-image: url("./assets/JS.png");
 }
 
 .victory-title {

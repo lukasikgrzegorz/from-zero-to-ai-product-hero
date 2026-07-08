@@ -2,6 +2,8 @@ var character = document.querySelector(".character");
 var map = document.querySelector(".map");
 var mapItemAiph = document.querySelector(".map-item--aiph");
 var mapItemBrush = document.querySelector(".map-item--brush");
+var mapItemHtml = document.querySelector(".map-item--html");
+var mapItemJs = document.querySelector(".map-item--js");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
 var victoryIcon = document.querySelector(".victory-icon");
@@ -20,6 +22,8 @@ var speed = 1; //How fast the character moves in pixels per frame
 var spaceHeld = false;
 var hasAiphItem = false;
 var hasBrushItem = false;
+var hasHtmlItem = false;
+var hasJsItem = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
 var cloneSpreadSpeed = 2.5; //units per frame
@@ -29,6 +33,10 @@ var aiphX = x + itemCenterOffset;
 var aiphY = y + itemCenterOffset + tileSize * 5 + 3; //5 tiles below character start
 var brushX = x - tileSize + itemCenterOffset; //1 tile left from start
 var brushY = y + tileSize + itemCenterOffset; //1 tile down from start
+var htmlX = x - tileSize * 4 + itemCenterOffset; //4 tiles left from start
+var htmlY = y + tileSize + itemCenterOffset; //1 tile down from start
+var jsX = htmlX + tileSize * 6; //6 tiles right from HTML
+var jsY = htmlY + tileSize * 2; //2 tiles below HTML
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
@@ -56,6 +64,12 @@ const dismissMessage = () => {
       victoryOverlay.hidden = true;
    }, 350);
    clearMovementInput();
+};
+
+const incrementLevel = (amount = 1) => {
+   const match = hudLevel.textContent.match(/Lv\.(\d+)/);
+   const currentLevel = match ? parseInt(match[1], 10) : 0;
+   hudLevel.textContent = `Lv.${currentLevel + amount}`;
 };
 
 const startGame = () => {
@@ -275,12 +289,38 @@ const placeCharacter = () => {
    });
 
    hasBrushItem = tryPickup(mapItemBrush, hasBrushItem, brushX, brushY, () => {
-      hudLevel.textContent = "Lv.1";
+      incrementLevel(2);
       showVictoryMessage({
          icon: "brush",
          title: "Odblokowano",
          subtitle: "Skil Grafik",
-         hint: "Level +1",
+         hint: "Level +2",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasHtmlItem = tryPickup(mapItemHtml, hasHtmlItem, htmlX, htmlY, () => {
+      incrementLevel(2);
+      showVictoryMessage({
+         icon: "html",
+         title: "Odblokowano",
+         subtitle: "Skill Webmaster",
+         hint: "Level +2",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasJsItem = tryPickup(mapItemJs, hasJsItem, jsX, jsY, () => {
+      incrementLevel(4);
+      showVictoryMessage({
+         icon: "js",
+         title: "Odblokowano",
+         subtitle: "Skill Web Developer",
+         hint: "Level +4",
          titleClass: "victory-title--secondary",
          subtitleClass: "victory-subtitle--hero",
          hintClass: "victory-hint--level",
@@ -315,6 +355,8 @@ const placeCharacter = () => {
 
    placeMapItem(mapItemAiph, hasAiphItem, aiphX, aiphY);
    placeMapItem(mapItemBrush, hasBrushItem, brushX, brushY);
+   placeMapItem(mapItemHtml, hasHtmlItem, htmlX, htmlY);
+   placeMapItem(mapItemJs, hasJsItem, jsX, jsY);
 }
 
 
