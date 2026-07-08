@@ -119,15 +119,149 @@ body {
 }
 
 .map {
-   -ms-interpolation-mode: nearest-neighbor;
-       image-rendering: -moz-crisp-edges;
-       image-rendering: pixelated;
-   background-image: url("./assets/CameraDemoMap.png");
-   background-size: 100%;
    width: calc(13 * var(--grid-cell));
    height: calc(40 * var(--grid-cell));
    position: relative;
    z-index: 1;
+}
+
+.map-layers {
+   position: absolute;
+   inset: 0;
+   z-index: 0;
+   pointer-events: none;
+   overflow: hidden;
+}
+
+.map-layer {
+   -ms-interpolation-mode: nearest-neighbor;
+       image-rendering: -moz-crisp-edges;
+       image-rendering: pixelated;
+   position: absolute;
+   inset: 0;
+   background-size: 100%;
+   transform-origin: center center;
+   will-change: opacity, transform, filter;
+}
+
+.map-layer--default {
+   background-image: url("./assets/CameraDemoMap.png");
+   opacity: 1;
+   transform: scale(1);
+   filter: brightness(1) saturate(1);
+   transition:
+      opacity 1.4s cubic-bezier(0.4, 0, 0.9, 1),
+      transform 1.75s cubic-bezier(0.45, 0, 0.2, 1),
+      filter 1.75s ease;
+}
+
+.map-layer--horizons {
+   background-image: url("./assets/CameraDemoMap2.png");
+   opacity: 0;
+   transform: scale(1.08);
+   filter: brightness(1.45) saturate(1.35);
+   transition:
+      opacity 1.75s cubic-bezier(0.15, 0.85, 0.25, 1),
+      transform 1.75s cubic-bezier(0.34, 1.25, 0.64, 1),
+      filter 1.75s ease;
+}
+
+.map-horizons-glow {
+   position: absolute;
+   inset: 0;
+   z-index: 1;
+   pointer-events: none;
+   opacity: 0;
+   background:
+      radial-gradient(
+         ellipse 90% 70% at 50% 50%,
+         rgba(184, 244, 255, 0.55) 0%,
+         rgba(23, 223, 234, 0.28) 38%,
+         rgba(255, 229, 102, 0.12) 58%,
+         transparent 78%
+      );
+   mix-blend-mode: screen;
+   transition: opacity 1.75s ease;
+}
+
+.map-horizons-sweep {
+   position: absolute;
+   inset: 0;
+   z-index: 2;
+   pointer-events: none;
+   opacity: 0;
+   transition: opacity 0.5s ease;
+   background: linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 42%,
+      rgba(255, 255, 255, 0.08) 46%,
+      rgba(184, 244, 255, 0.75) 49%,
+      rgba(255, 229, 102, 0.95) 50%,
+      rgba(184, 244, 255, 0.75) 51%,
+      rgba(255, 255, 255, 0.08) 54%,
+      transparent 58%,
+      transparent 100%
+   );
+   background-size: 280% 100%;
+   background-position: 120% 0;
+   mix-blend-mode: screen;
+}
+
+.map.horizons-active .map-layer--default {
+   opacity: 0;
+   transform: scale(0.94);
+   filter: brightness(0.45) saturate(0.75);
+}
+
+.map.horizons-active .map-layer--horizons {
+   opacity: 1;
+   transform: scale(1);
+   filter: brightness(1) saturate(1);
+}
+
+.map.horizons-active .map-horizons-glow {
+   opacity: 1;
+}
+
+.map.horizons-active .map-horizons-sweep {
+   opacity: 1;
+   -webkit-animation: horizonsSweep 1.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+           animation: horizonsSweep 1.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@-webkit-keyframes horizonsSweep {
+   0% {
+      background-position: 120% 0;
+      opacity: 0;
+   }
+   12% {
+      opacity: 1;
+   }
+   88% {
+      opacity: 1;
+   }
+   100% {
+      background-position: -80% 0;
+      opacity: 0;
+   }
+}
+
+@keyframes horizonsSweep {
+   0% {
+      background-position: 120% 0;
+      opacity: 0;
+   }
+   12% {
+      opacity: 1;
+   }
+   88% {
+      opacity: 1;
+   }
+   100% {
+      background-position: -80% 0;
+      opacity: 0;
+   }
 }
 
 .character {

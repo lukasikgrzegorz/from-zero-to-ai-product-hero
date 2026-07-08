@@ -22,6 +22,7 @@ var y = 34;
 var held_directions = []; //State of which arrow keys we are holding down
 var speed = 1; //How fast the character moves in pixels per frame
 var spaceHeld = false;
+var horizonsHeld = false;
 var hasAiphItem = false;
 var hasAiph2Item = false;
 var hasAiph3Item = false;
@@ -52,8 +53,10 @@ var messageBlocking = false;
 const clearMovementInput = () => {
    held_directions = [];
    spaceHeld = false;
+   horizonsHeld = false;
    gamepadDirection = null;
    gamepadSpaceHeld = false;
+   gamepadHorizonsHeld = false;
    isPressed = false;
    removePressedAll();
 };
@@ -152,6 +155,7 @@ const STICK_DEADZONE = 0.35;
 const GAMEPAD_BUTTONS = {
    a: 0,
    b: 1,
+   y: 3,
    dpadUp: 12,
    dpadDown: 13,
    dpadLeft: 14,
@@ -159,6 +163,7 @@ const GAMEPAD_BUTTONS = {
 };
 var gamepadDirection = null;
 var gamepadSpaceHeld = false;
+var gamepadHorizonsHeld = false;
 var gamepadButtonState = {};
 var gamepadActive = false;
 
@@ -179,6 +184,7 @@ const pollGamepad = () => {
    if (!pad) {
       gamepadDirection = null;
       gamepadSpaceHeld = false;
+      gamepadHorizonsHeld = false;
       gamepadButtonState = {};
       gamepadActive = false;
       return;
@@ -202,6 +208,7 @@ const pollGamepad = () => {
    if (!gamepadActive) {
       gamepadDirection = null;
       gamepadSpaceHeld = false;
+      gamepadHorizonsHeld = false;
       return;
    }
 
@@ -216,6 +223,9 @@ const pollGamepad = () => {
 
    const bPressed = !!pad.buttons[GAMEPAD_BUTTONS.b]?.pressed;
    gamepadSpaceHeld = bPressed;
+
+   const yPressed = !!pad.buttons[GAMEPAD_BUTTONS.y]?.pressed;
+   gamepadHorizonsHeld = yPressed;
 
    const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
    const wasAPressed = !!gamepadButtonState.a;
@@ -382,6 +392,9 @@ const placeCharacter = () => {
    placeClone(cloneLeft, -cloneSpread);
    placeClone(cloneRight, cloneSpread);
 
+   const horizonsActive = hasAiph2Item && (horizonsHeld || gamepadHorizonsHeld);
+   map.classList.toggle("horizons-active", horizonsActive);
+
    const placeMapItem = (itemEl, itemCollected, itemX, itemY) => {
       if (itemEl && !itemCollected) {
          itemEl.style.transform = `translate3d( ${itemX*pixelSize}px, ${itemY*pixelSize}px, 0 )`;
@@ -400,6 +413,11 @@ const placeCharacter = () => {
 const setSpaceHeld = (held) => {
    if (held && !hasAiphItem) return;
    spaceHeld = held;
+};
+
+const setHorizonsHeld = (held) => {
+   if (held && !hasAiph2Item) return;
+   horizonsHeld = held;
 };
 
 const pressDirection = (dir) => {
@@ -429,6 +447,11 @@ document.addEventListener("keydown", (e) => {
       setSpaceHeld(true);
       return;
    }
+   if (e.code === "ControlLeft" || e.code === "ControlRight") {
+      e.preventDefault();
+      setHorizonsHeld(true);
+      return;
+   }
    if (e.code === "Enter") {
       e.preventDefault();
       dismissMessage();
@@ -444,6 +467,10 @@ document.addEventListener("keyup", (e) => {
    if (!gameStarted) return;
    if (e.code === "Space" || e.key === " ") {
       setSpaceHeld(false);
+      return;
+   }
+   if (e.code === "ControlLeft" || e.code === "ControlRight") {
+      horizonsHeld = e.getModifierState("Control") && hasAiph2Item;
       return;
    }
    var dir = keys[e.which];
