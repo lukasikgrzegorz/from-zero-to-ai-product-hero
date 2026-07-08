@@ -296,7 +296,7 @@ body {
    height: calc( var(--grid-cell)* 2 );
    position: absolute;
    left: calc( var(--grid-cell) * -0.5 );
-   top: calc( var(--grid-cell) * -1 );
+   top: calc( var(--grid-cell) * -1 + var(--pixel-size) * 2 );
    background: url("./assets/DemoRpgCharacterShadow.png") no-repeat no-repeat;
    background-size: 100%;
 }
@@ -304,13 +304,22 @@ body {
 .item_sprite {
    position: absolute;
    left: 0;
-   top: 0;
+   top: calc(var(--pixel-size) * 2);
    width: var(--grid-cell);
    height: var(--grid-cell);
-   background: url("./assets/AIPH.png") no-repeat no-repeat;
    background-size: 100%;
    -webkit-animation: itemLevitate 2.4s ease-in-out infinite;
            animation: itemLevitate 2.4s ease-in-out infinite;
+}
+
+.map-item--aiph .item_sprite {
+   background-image: url("./assets/AIPH.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--brush .item_sprite {
+   background-image: url("./assets/BRUSH.png");
+   background-repeat: no-repeat;
 }
 
 @-webkit-keyframes itemLevitate {
@@ -400,10 +409,19 @@ body {
 .victory-icon {
    width: calc(var(--grid-cell) * 3);
    height: calc(var(--grid-cell) * 3);
-   background: url("./assets/AIPH.png") no-repeat center;
+   background-repeat: no-repeat;
+   background-position: center;
    background-size: contain;
    -webkit-animation: victoryIconPop 0.6s ease 0.15s both;
            animation: victoryIconPop 0.6s ease 0.15s both;
+}
+
+.victory-icon--aiph {
+   background-image: url("./assets/AIPH.png");
+}
+
+.victory-icon--brush {
+   background-image: url("./assets/BRUSH.png");
 }
 
 .victory-title {
@@ -426,12 +444,35 @@ body {
    text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
 }
 
+.victory-title--secondary {
+   font-size: calc(var(--pixel-size) * 3.5);
+   line-height: 1.5;
+   color: #f5f5f5;
+   text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
+}
+
+.victory-subtitle--hero {
+   font-size: calc(var(--pixel-size) * 5);
+   line-height: 1.4;
+   color: #ffe566;
+   text-shadow:
+      calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343,
+      calc(var(--pixel-size) * 3) calc(var(--pixel-size) * 3) 0 #1a1c3a;
+}
+
 .victory-hint {
    margin: calc(var(--pixel-size) * 2) 0 0;
    font-family: 'Press Start 2P', cursive;
    font-size: calc(var(--pixel-size) * 1.75);
    line-height: 1.8;
    color: #b8f4ff;
+}
+
+.victory-hint--level {
+   font-size: calc(var(--pixel-size) * 3.5);
+   line-height: 1.5;
+   color: #f5f5f5;
+   text-shadow: calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #434343;
 }
 
 @-webkit-keyframes victoryIconPop {

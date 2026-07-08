@@ -1,8 +1,14 @@
 var character = document.querySelector(".character");
 var map = document.querySelector(".map");
-var mapItem = document.querySelector(".map-item");
+var mapItemAiph = document.querySelector(".map-item--aiph");
+var mapItemBrush = document.querySelector(".map-item--brush");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
+var victoryIcon = document.querySelector(".victory-icon");
+var victoryTitle = document.querySelector(".victory-title");
+var victorySubtitle = document.querySelector(".victory-subtitle");
+var victoryHint = document.querySelector(".victory-hint");
+var hudLevel = document.querySelector(".hud-level");
 var startOverlay = document.querySelector(".start-overlay");
 var gameStarted = false;
 
@@ -13,14 +19,44 @@ var held_directions = []; //State of which arrow keys we are holding down
 var speed = 1; //How fast the character moves in pixels per frame
 var spaceHeld = false;
 var hasAiphItem = false;
+var hasBrushItem = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
 var cloneSpreadSpeed = 2.5; //units per frame
 var tileSize = 16;
-var itemX = x + tileSize / 2 - 1; //centered like the 2x2 character
-var itemY = y + tileSize / 2 + tileSize * 5 + 3; //5 tiles below character start
+var itemCenterOffset = tileSize / 2 - 1; //centered like the 2x2 character
+var aiphX = x + itemCenterOffset;
+var aiphY = y + itemCenterOffset + tileSize * 5 + 3; //5 tiles below character start
+var brushX = x - tileSize + itemCenterOffset; //1 tile left from start
+var brushY = y + tileSize + itemCenterOffset; //1 tile down from start
 var messageTimeout = null;
 var victoryTimeout = null;
+var messageBlocking = false;
+
+const clearMovementInput = () => {
+   held_directions = [];
+   spaceHeld = false;
+   gamepadDirection = null;
+   gamepadSpaceHeld = false;
+   isPressed = false;
+   removePressedAll();
+};
+
+const dismissMessage = () => {
+   if (!messageBlocking) return;
+   messageBlocking = false;
+   clearTimeout(messageTimeout);
+   clearTimeout(victoryTimeout);
+   gameMessage.classList.remove("visible");
+   setTimeout(() => {
+      gameMessage.hidden = true;
+   }, 200);
+   victoryOverlay.classList.remove("visible");
+   setTimeout(() => {
+      victoryOverlay.hidden = true;
+   }, 350);
+   clearMovementInput();
+};
 
 const startGame = () => {
    if (gameStarted) return;
@@ -31,31 +67,38 @@ const startGame = () => {
    }, 400);
 };
 
-const showVictoryMessage = () => {
+const showVictoryMessage = ({
+   icon = "aiph",
+   title,
+   subtitle,
+   hint = "",
+   titleClass = "",
+   subtitleClass = "",
+   hintClass = "",
+}) => {
+   victoryIcon.className = `victory-icon victory-icon--${icon} pixel-art`;
+   victoryTitle.textContent = title;
+   victorySubtitle.textContent = subtitle;
+   victoryHint.textContent = hint;
+   victoryHint.hidden = !hint;
+   victoryTitle.className = titleClass ? `victory-title ${titleClass}` : "victory-title";
+   victorySubtitle.className = subtitleClass ? `victory-subtitle ${subtitleClass}` : "victory-subtitle";
+   victoryHint.className = hintClass ? `victory-hint ${hintClass}` : "victory-hint";
+
+   messageBlocking = true;
+   clearMovementInput();
    victoryOverlay.hidden = false;
    requestAnimationFrame(() => {
       victoryOverlay.classList.add("visible");
    });
-   clearTimeout(victoryTimeout);
-   victoryTimeout = setTimeout(() => {
-      victoryOverlay.classList.remove("visible");
-      setTimeout(() => {
-         victoryOverlay.hidden = true;
-      }, 350);
-   }, 3600);
 };
 
 const showGameMessage = (text) => {
+   messageBlocking = true;
+   clearMovementInput();
    gameMessage.textContent = text;
    gameMessage.hidden = false;
    gameMessage.classList.add("visible");
-   clearTimeout(messageTimeout);
-   messageTimeout = setTimeout(() => {
-      gameMessage.classList.remove("visible");
-      setTimeout(() => {
-         gameMessage.hidden = true;
-      }, 200);
-   }, 2200);
 };
 
 const createClone = () => {
@@ -176,7 +219,7 @@ const placeCharacter = () => {
       getComputedStyle(document.documentElement).getPropertyValue('--pixel-size')
    ) || 2;
    
-   const held_direction = gamepadDirection || held_directions[0];
+   const held_direction = messageBlocking ? null : (gamepadDirection || held_directions[0]);
    if (held_direction) {
       if (held_direction === directions.right) {x += speed;}
       if (held_direction === directions.left) {x -= speed;}
@@ -203,17 +246,46 @@ const placeCharacter = () => {
    map.style.transform = `translate3d( ${-x*pixelSize+camera_left}px, ${-y*pixelSize+camera_top}px, 0 )`;
    character.style.transform = `translate3d( ${x*pixelSize}px, ${y*pixelSize}px, 0 )`;
 
-   if (!hasAiphItem && mapItem) {
-      const pickupDistance = tileSize * 1.25;
-      if (
-         Math.abs(x - itemX) < pickupDistance &&
-         Math.abs(y - itemY) < pickupDistance
-      ) {
-         hasAiphItem = true;
-         mapItem.classList.add("collected");
-         showVictoryMessage();
+   const characterCenterX = x + tileSize;
+   const characterCenterY = y + tileSize;
+   const pickupRadius = tileSize * 0.75;
+   const tryPickup = (itemEl, itemCollected, itemX, itemY, onCollect) => {
+      if (itemCollected || !itemEl) return itemCollected;
+      const itemCenterX = itemX + tileSize / 2;
+      const itemCenterY = itemY + tileSize / 2;
+      const distance = Math.hypot(
+         characterCenterX - itemCenterX,
+         characterCenterY - itemCenterY
+      );
+      if (distance < pickupRadius) {
+         itemEl.classList.add("collected");
+         onCollect();
+         return true;
       }
-   }
+      return itemCollected;
+   };
+
+   hasAiphItem = tryPickup(mapItemAiph, hasAiphItem, aiphX, aiphY, () => {
+      showVictoryMessage({
+         icon: "aiph",
+         title: "AIPH",
+         subtitle: "ZDOBYTY!",
+         hint: "Spacja = kolonizacja",
+      });
+   });
+
+   hasBrushItem = tryPickup(mapItemBrush, hasBrushItem, brushX, brushY, () => {
+      hudLevel.textContent = "Lv.1";
+      showVictoryMessage({
+         icon: "brush",
+         title: "Odblokowano",
+         subtitle: "Skil Grafik",
+         hint: "Level +1",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
 
    const targetSpread = ((spaceHeld || gamepadSpaceHeld) && hasAiphItem) ? cloneSpreadMax : 0;
    if (cloneSpread < targetSpread) {
@@ -235,9 +307,14 @@ const placeCharacter = () => {
    placeClone(cloneLeft, -cloneSpread);
    placeClone(cloneRight, cloneSpread);
 
-   if (mapItem && !hasAiphItem) {
-      mapItem.style.transform = `translate3d( ${itemX*pixelSize}px, ${itemY*pixelSize}px, 0 )`;
-   }
+   const placeMapItem = (itemEl, itemCollected, itemX, itemY) => {
+      if (itemEl && !itemCollected) {
+         itemEl.style.transform = `translate3d( ${itemX*pixelSize}px, ${itemY*pixelSize}px, 0 )`;
+      }
+   };
+
+   placeMapItem(mapItemAiph, hasAiphItem, aiphX, aiphY);
+   placeMapItem(mapItemBrush, hasBrushItem, brushX, brushY);
 }
 
 
@@ -247,6 +324,7 @@ const setSpaceHeld = (held) => {
 };
 
 const pressDirection = (dir) => {
+   if (messageBlocking) return;
    if (dir && held_directions.indexOf(dir) === -1) {
       held_directions.unshift(dir);
    }
@@ -274,6 +352,7 @@ document.addEventListener("keydown", (e) => {
    }
    if (e.code === "Enter") {
       e.preventDefault();
+      dismissMessage();
       return;
    }
    var dir = keys[e.which];
@@ -309,7 +388,8 @@ document.body.addEventListener("mouseup", () => {
    held_directions = [];
    removePressedAll();
 })
-const handleDpadPress = (direction, click) => {   
+const handleDpadPress = (direction, click) => {
+   if (messageBlocking) return;
    if (click) {
       isPressed = true;
    }

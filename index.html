@@ -3,7 +3,7 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>From zero to hero</title>
+    <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://public.codepenassets.com/css/normalize-5.0.0.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
 <link rel="stylesheet" href="./style.css">
@@ -11,11 +11,7 @@
   </head>
     
   <body>
-  <!-- 
-   see the video tutorial for how this kind of thing works:
-   https://youtu.be/H3Fn33lYuE0
--->
-
+ 
 <div class="frame">
    <div class="corner_topleft"></div>
    <div class="corner_topright"></div>
@@ -57,7 +53,11 @@
             <div class="shadow pixel-art"></div>
             <div class="character_spritesheet pixel-art"></div>
          </div>
-         <div class="map-item pixel-art">
+         <div class="map-item map-item--aiph pixel-art">
+            <div class="item_shadow pixel-art"></div>
+            <div class="item_sprite pixel-art"></div>
+         </div>
+         <div class="map-item map-item--brush pixel-art">
             <div class="item_shadow pixel-art"></div>
             <div class="item_sprite pixel-art"></div>
          </div>
@@ -153,7 +153,7 @@
       <p class="game-message" hidden></p>
       <div class="victory-overlay" hidden>
          <div class="victory-panel">
-            <div class="victory-icon pixel-art"></div>
+            <div class="victory-icon victory-icon--aiph pixel-art"></div>
             <p class="victory-title">AIPH</p>
             <p class="victory-subtitle">ZDOBYTY!</p>
             <p class="victory-hint">Spacja = kolonizacja</p>
