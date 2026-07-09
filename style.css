@@ -299,6 +299,10 @@ body {
    height: calc( var(--grid-cell)* 8 );
 }
 
+.character--alt .character_spritesheet {
+   background-image: url("./assets/DemoRpgCharacter2.png");
+}
+
 .character[facing="right"] .character_spritesheet {
    background-position-y: calc( var(--pixel-size) * -32 );
 }
@@ -1152,7 +1156,7 @@ body {
    justify-self: center;
    width: calc(var(--grid-cell) * 2);
    height: calc(var(--grid-cell) * 2);
-   transform: translate(calc(var(--pixel-size) * 8), calc(var(--pixel-size) * 4));
+   transform: translate(calc(var(--pixel-size) * 8), 0);
 }
 
 .skills-stage--aiph .skills-aiph-sparkles {
@@ -1266,7 +1270,7 @@ body {
    75% { fill: #ffffff; }
 }
 
-.skills-stage .skills-character {
+.skills-stage .skills-character.character {
    grid-column: 2 / span 2;
    grid-row: 2 / span 2;
    position: relative;
@@ -1276,7 +1280,7 @@ body {
    overflow: hidden;
    width: calc(var(--grid-cell) * 2);
    height: calc(var(--grid-cell) * 2);
-   transform: translate(calc(var(--pixel-size) * 8), calc(var(--pixel-size) * 4));
+   transform: translate(calc(var(--pixel-size) * 8), 0);
 }
 
 .skills-slots {

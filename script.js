@@ -31,6 +31,7 @@ var hudLevel = document.querySelector(".hud-level");
 var startOverlay = document.querySelector(".start-overlay");
 var gameStarted = false;
 var skillsOverlayOpen = false;
+var characterAltSprite = false;
 
 //start in the middle of the map
 var x = 90;
@@ -421,6 +422,14 @@ const toggleSkillsOverlay = () => {
    setSkillsOverlay(!skillsOverlayOpen);
 };
 
+const toggleCharacterSprite = () => {
+   if (!gameStarted) return;
+   characterAltSprite = !characterAltSprite;
+   document.querySelectorAll(".character").forEach((el) => {
+      el.classList.toggle("character--alt", characterAltSprite);
+   });
+};
+
 const createClone = () => {
    var clone = character.cloneNode(true);
    clone.classList.add("clone");
@@ -445,13 +454,14 @@ const keys = {
    40: directions.down,
 };
 
-/* Xbox / gamepad: A = Enter, B = Space, X = skille, lewy analog + D-pad = ruch */
+/* Xbox / gamepad: A = Enter, B = Space, X = skille, Select = zmiana postaci, lewy analog + D-pad = ruch */
 const STICK_DEADZONE = 0.35;
 const GAMEPAD_BUTTONS = {
    a: 0,
    b: 1,
    x: 2,
    y: 3,
+   select: 8,
    dpadUp: 12,
    dpadDown: 13,
    dpadLeft: 14,
@@ -542,6 +552,13 @@ const pollGamepad = () => {
       toggleSkillsOverlay();
    }
    gamepadButtonState.x = xPressed;
+
+   const selectPressed = !!pad.buttons[GAMEPAD_BUTTONS.select]?.pressed;
+   const wasSelectPressed = !!gamepadButtonState.select;
+   if (gameStarted && selectPressed && !wasSelectPressed) {
+      toggleCharacterSprite();
+   }
+   gamepadButtonState.select = selectPressed;
 };
 
 window.addEventListener("gamepadconnected", () => {
@@ -922,6 +939,11 @@ document.addEventListener("keydown", (e) => {
    if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
       e.preventDefault();
       toggleSkillsOverlay();
+      return;
+   }
+   if (e.code === "Tab") {
+      e.preventDefault();
+      toggleCharacterSprite();
       return;
    }
    if (e.code === "Enter") {
