@@ -480,6 +480,19 @@ body {
    background-repeat: no-repeat;
 }
 
+.map-item--contract .item_sprite {
+   background-image: url("./assets/CONTRACT.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--diamond .item_sprite,
+.map-item--diamond2 .item_sprite,
+.map-item--diamond3 .item_sprite,
+.map-item--diamond4 .item_sprite {
+   background-image: url("./assets/DIAMOND.png");
+   background-repeat: no-repeat;
+}
+
 @-webkit-keyframes itemLevitate {
    0%, 100% {
       transform: translate3d(0, 0, 0);
@@ -610,6 +623,14 @@ body {
 
 .victory-icon--robot {
    background-image: url("./assets/ROBOT.png");
+}
+
+.victory-icon--contract {
+   background-image: url("./assets/CONTRACT.png");
+}
+
+.victory-icon--diamond {
+   background-image: url("./assets/DIAMOND.png");
 }
 
 .victory-title {

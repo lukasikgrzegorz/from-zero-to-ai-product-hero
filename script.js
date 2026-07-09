@@ -8,6 +8,11 @@ var mapItemHtml = document.querySelector(".map-item--html");
 var mapItemJs = document.querySelector(".map-item--js");
 var mapItemCoins = document.querySelector(".map-item--coins");
 var mapItemRobot = document.querySelector(".map-item--robot");
+var mapItemContract = document.querySelector(".map-item--contract");
+var mapItemDiamond = document.querySelector(".map-item--diamond");
+var mapItemDiamond2 = document.querySelector(".map-item--diamond2");
+var mapItemDiamond3 = document.querySelector(".map-item--diamond3");
+var mapItemDiamond4 = document.querySelector(".map-item--diamond4");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
 var victoryIcon = document.querySelector(".victory-icon");
@@ -39,6 +44,11 @@ var hasHtmlItem = false;
 var hasJsItem = false;
 var hasCoinsItem = false;
 var hasRobotItem = false;
+var hasContractItem = false;
+var hasDiamondItem = false;
+var hasDiamond2Item = false;
+var hasDiamond3Item = false;
+var hasDiamond4Item = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
 var cloneSpreadSpeed = 2.5; //units per frame
@@ -50,6 +60,16 @@ var aiph2X = aiphX;
 var aiph2Y = aiphY + tileSize * 14 + tileSize / 2 - 8; //14.5 tiles below AIPH, 8px up
 var aiph3X = aiphX;
 var aiph3Y = aiph2Y + tileSize * 16; //16 tiles below AIPH 2
+var contractX = aiphX;
+var contractY = aiphY + tileSize * 8; //8 tiles below first AIPH
+var diamondX = contractX - tileSize; //1 tile left from contract
+var diamondY = contractY + tileSize * 2; //2 tiles below contract
+var diamond2X = contractX - tileSize * 4; //4 tiles left from contract
+var diamond2Y = diamondY; //same row as first diamond
+var diamond3X = contractX - tileSize * 2; //2 tiles left from contract
+var diamond3Y = contractY + tileSize * 4; //4 tiles below contract
+var diamond4X = contractX + tileSize * 3; //3 tiles right from contract
+var diamond4Y = contractY + tileSize * 4; //4 tiles below contract
 var brushX = x - tileSize + itemCenterOffset; //1 tile left from start
 var brushY = y + tileSize + itemCenterOffset; //1 tile down from start
 var htmlX = x - tileSize * 4 + itemCenterOffset; //4 tiles left from start
@@ -650,6 +670,68 @@ const placeCharacter = () => {
       });
    });
 
+   hasContractItem = tryPickup(mapItemContract, hasContractItem, contractX, contractY, () => {
+      showVictoryMessage({
+         icon: "contract",
+         title: "Osiągnięcie",
+         subtitle: "Zmiana pracy",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+      });
+   });
+
+   hasDiamondItem = tryPickup(mapItemDiamond, hasDiamondItem, diamondX, diamondY, () => {
+      incrementLevel(10);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Odblokowano",
+         subtitle: "Skill Product Discovery",
+         hint: "Level +10",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasDiamond2Item = tryPickup(mapItemDiamond2, hasDiamond2Item, diamond2X, diamond2Y, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Odblokowano",
+         subtitle: "Skill Wywiad z userami",
+         hint: "Level +5",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasDiamond3Item = tryPickup(mapItemDiamond3, hasDiamond3Item, diamond3X, diamond3Y, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Odblokowano",
+         subtitle: "Skill Pain point hunter",
+         hint: "Level +5",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasDiamond4Item = tryPickup(mapItemDiamond4, hasDiamond4Item, diamond4X, diamond4Y, () => {
+      incrementLevel(10);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Odblokowano",
+         subtitle: "Skill Szybkie prototypowanie",
+         hint: "Level +10",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
    const targetSpread = ((spaceHeld || gamepadSpaceHeld) && hasAiphItem) ? cloneSpreadMax : 0;
    if (cloneSpread < targetSpread) {
       cloneSpread = Math.min(cloneSpread + cloneSpreadSpeed, targetSpread);
@@ -687,6 +769,11 @@ const placeCharacter = () => {
    placeMapItem(mapItemJs, hasJsItem, jsX, jsY);
    placeMapItem(mapItemCoins, hasCoinsItem, coinsX, coinsY);
    placeMapItem(mapItemRobot, hasRobotItem, robotX, robotY);
+   placeMapItem(mapItemContract, hasContractItem, contractX, contractY);
+   placeMapItem(mapItemDiamond, hasDiamondItem, diamondX, diamondY);
+   placeMapItem(mapItemDiamond2, hasDiamond2Item, diamond2X, diamond2Y);
+   placeMapItem(mapItemDiamond3, hasDiamond3Item, diamond3X, diamond3Y);
+   placeMapItem(mapItemDiamond4, hasDiamond4Item, diamond4X, diamond4Y);
 }
 
 
