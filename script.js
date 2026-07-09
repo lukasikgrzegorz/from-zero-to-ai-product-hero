@@ -1,6 +1,7 @@
 var character = document.querySelector(".character");
 var map = document.querySelector(".map");
 var mapItemAiph = document.querySelector(".map-item--aiph");
+var mapItemOrbs = document.querySelectorAll(".map-item--orb");
 var mapItemAiph2 = document.querySelector(".map-item--aiph2");
 var mapItemAiph3 = document.querySelector(".map-item--aiph3");
 var mapItemBrush = document.querySelector(".map-item--brush");
@@ -56,6 +57,26 @@ var tileSize = 16;
 var itemCenterOffset = tileSize / 2 - 1; //centered like the 2x2 character
 var aiphX = x + itemCenterOffset;
 var aiphY = y + itemCenterOffset + tileSize * 5 + 3; //5 tiles below character start
+var orbX = aiphX;
+var orbBaseY = aiphY + tileSize; //1 tile below first AIPH
+var orbCenterCount = 7;
+var orbSideCount = 6;
+var orbSideOffset = tileSize * 2;
+var orbPositions = [
+   ...Array.from({ length: orbCenterCount }, (_, row) => ({
+      x: orbX,
+      y: orbBaseY + tileSize * row,
+   })),
+   ...Array.from({ length: orbSideCount }, (_, row) => ({
+      x: orbX - orbSideOffset,
+      y: orbBaseY + tileSize * (row + 1),
+   })),
+   ...Array.from({ length: orbSideCount }, (_, row) => ({
+      x: orbX + orbSideOffset,
+      y: orbBaseY + tileSize * (row + 1),
+   })),
+];
+var hasOrbItems = Array(orbPositions.length).fill(false);
 var aiph2X = aiphX;
 var aiph2Y = aiphY + tileSize * 14 + tileSize / 2 - 8; //14.5 tiles below AIPH, 8px up
 var aiph3X = aiphX;
@@ -569,6 +590,32 @@ const placeCharacter = () => {
       return itemCollected;
    };
 
+   const getOrbCollectorCenters = () => {
+      const centers = [{ x: characterCenterX, y: characterCenterY }];
+      if (hasAiphItem && cloneSpread > 0) {
+         centers.push(
+            { x: x - cloneSpread + tileSize, y: characterCenterY },
+            { x: x + cloneSpread + tileSize, y: characterCenterY }
+         );
+      }
+      return centers;
+   };
+
+   const tryOrbPickup = (itemEl, itemCollected, itemX, itemY, onCollect) => {
+      if (skillsOverlayOpen || itemCollected || !itemEl) return itemCollected;
+      const itemCenterX = itemX + tileSize / 2;
+      const itemCenterY = itemY + tileSize / 2;
+      const inRange = getOrbCollectorCenters().some(({ x: centerX, y: centerY }) =>
+         Math.hypot(centerX - itemCenterX, centerY - itemCenterY) < pickupRadius
+      );
+      if (inRange) {
+         itemEl.classList.add("collected");
+         onCollect();
+         return true;
+      }
+      return itemCollected;
+   };
+
    hasAiphItem = tryPickup(mapItemAiph, hasAiphItem, aiphX, aiphY, () => {
       showVictoryMessage({
          icon: "aiph",
@@ -579,6 +626,17 @@ const placeCharacter = () => {
          subtitleClass: "victory-subtitle--hero",
          hintClass: "victory-hint--skill",
       });
+   });
+
+   mapItemOrbs.forEach((itemEl, index) => {
+      const { x: itemX, y: itemY } = orbPositions[index];
+      hasOrbItems[index] = tryOrbPickup(
+         itemEl,
+         hasOrbItems[index],
+         itemX,
+         itemY,
+         () => incrementLevel(1)
+      );
    });
 
    hasAiph2Item = tryPickup(mapItemAiph2, hasAiph2Item, aiph2X, aiph2Y, () => {
@@ -762,6 +820,10 @@ const placeCharacter = () => {
    };
 
    placeMapItem(mapItemAiph, hasAiphItem, aiphX, aiphY);
+   mapItemOrbs.forEach((itemEl, index) => {
+      const { x: itemX, y: itemY } = orbPositions[index];
+      placeMapItem(itemEl, hasOrbItems[index], itemX, itemY);
+   });
    placeMapItem(mapItemAiph2, hasAiph2Item, aiph2X, aiph2Y);
    placeMapItem(mapItemAiph3, hasAiph3Item, aiph3X, aiph3Y);
    placeMapItem(mapItemBrush, hasBrushItem, brushX, brushY);

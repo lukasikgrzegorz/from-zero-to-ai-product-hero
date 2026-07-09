@@ -455,6 +455,15 @@ body {
            animation: itemLevitate 2.4s ease-in-out infinite, aiphShimmer 2.8s steps(4, end) infinite;
 }
 
+.map-item--orb .item_shadow--orb {
+   background-image: url("./assets/OrbShadow.png");
+}
+
+.map-item--orb .item_sprite {
+   background-image: url("./assets/ORB.png");
+   background-repeat: no-repeat;
+}
+
 .map-item--brush .item_sprite {
    background-image: url("./assets/BRUSH.png");
    background-repeat: no-repeat;
