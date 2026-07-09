@@ -14,9 +14,15 @@ var victoryIcon = document.querySelector(".victory-icon");
 var victoryTitle = document.querySelector(".victory-title");
 var victorySubtitle = document.querySelector(".victory-subtitle");
 var victoryHint = document.querySelector(".victory-hint");
+var skillsOverlay = document.querySelector(".skills-overlay");
+var skillsStage = document.querySelector(".skills-stage");
+var skillsLinks = document.querySelector(".skills-links");
+var skillsSlots = document.querySelector(".skills-slots");
+var skillsCharacter = document.querySelector(".skills-character");
 var hudLevel = document.querySelector(".hud-level");
 var startOverlay = document.querySelector(".start-overlay");
 var gameStarted = false;
+var skillsOverlayOpen = false;
 
 //start in the middle of the map
 var x = 90;
@@ -57,6 +63,25 @@ var robotY = jsY;
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
+
+const SKILL_RING_POSITIONS = [
+   "top-left",
+   "top",
+   "top-right",
+   "left",
+   "right",
+   "bottom-left",
+   "bottom",
+   "bottom-right",
+];
+
+const SKILL_DEFINITIONS = [
+   { icon: "brush", has: () => hasBrushItem },
+   { icon: "html", has: () => hasHtmlItem },
+   { icon: "js", has: () => hasJsItem },
+   { icon: "robot", has: () => hasRobotItem },
+   { icon: "coins", has: () => hasCoinsItem },
+];
 
 const clearMovementInput = () => {
    held_directions = [];
@@ -134,6 +159,217 @@ const showGameMessage = (text) => {
    gameMessage.classList.add("visible");
 };
 
+const getPixelSize = () => {
+   return parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--pixel-size")
+   ) || 2;
+};
+
+const snapToPixel = (value, pixelSize) => Math.round(value / pixelSize) * pixelSize;
+
+const createPixelDrawer = (svg, pixelSize, seen, lineIndex) => {
+   let pixelIndex = 0;
+
+   return (x, y) => {
+      const snappedX = snapToPixel(x, pixelSize);
+      const snappedY = snapToPixel(y, pixelSize);
+      const key = `${snappedX},${snappedY}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", snappedX);
+      rect.setAttribute("y", snappedY);
+      rect.setAttribute("width", pixelSize);
+      rect.setAttribute("height", pixelSize);
+      rect.setAttribute("class", "skills-link-pixel");
+      rect.style.animationDelay = `${((lineIndex * 4 + pixelIndex) % 10) * 0.12}s`;
+      svg.appendChild(rect);
+      pixelIndex += 1;
+   };
+};
+
+const appendPixelPath = (svg, x1, y1, x2, y2, pixelSize, seen, lineIndex) => {
+   const addPixel = createPixelDrawer(svg, pixelSize, seen, lineIndex);
+   const startX = snapToPixel(x1, pixelSize);
+   const startY = snapToPixel(y1, pixelSize);
+   const endX = snapToPixel(x2, pixelSize);
+   const endY = snapToPixel(y2, pixelSize);
+
+   const xStep = endX >= startX ? pixelSize : -pixelSize;
+   for (let x = startX; x !== endX; x += xStep) {
+      addPixel(x, startY);
+   }
+   addPixel(endX, startY);
+
+   const yStep = endY >= startY ? pixelSize : -pixelSize;
+   for (let y = startY; y !== endY; y += yStep) {
+      addPixel(endX, y);
+   }
+   addPixel(endX, endY);
+};
+
+const appendPixelPathVerticalFirst = (svg, x1, y1, x2, y2, pixelSize, seen, lineIndex) => {
+   const addPixel = createPixelDrawer(svg, pixelSize, seen, lineIndex);
+   const startX = snapToPixel(x1, pixelSize);
+   const startY = snapToPixel(y1, pixelSize);
+   const endX = snapToPixel(x2, pixelSize);
+   const endY = snapToPixel(y2, pixelSize);
+
+   const yStep = endY >= startY ? pixelSize : -pixelSize;
+   for (let y = startY; y !== endY; y += yStep) {
+      addPixel(startX, y);
+   }
+   addPixel(startX, endY);
+
+   const xStep = endX >= startX ? pixelSize : -pixelSize;
+   for (let x = startX; x !== endX; x += xStep) {
+      addPixel(x, endY);
+   }
+   addPixel(endX, endY);
+};
+
+const appendDiagonalPixelPath = (svg, x1, y1, x2, y2, pixelSize, seen, lineIndex) => {
+   const addPixel = createPixelDrawer(svg, pixelSize, seen, lineIndex);
+   let gridX = Math.round(x1 / pixelSize);
+   let gridY = Math.round(y1 / pixelSize);
+   const endGridX = Math.round(x2 / pixelSize);
+   const endGridY = Math.round(y2 / pixelSize);
+   const deltaX = Math.abs(endGridX - gridX);
+   const deltaY = Math.abs(endGridY - gridY);
+   const stepX = gridX < endGridX ? 1 : -1;
+   const stepY = gridY < endGridY ? 1 : -1;
+   let error = deltaX - deltaY;
+
+   while (true) {
+      addPixel(gridX * pixelSize, gridY * pixelSize);
+      if (gridX === endGridX && gridY === endGridY) break;
+      const doubleError = 2 * error;
+      if (doubleError > -deltaY) {
+         error -= deltaY;
+         gridX += stepX;
+      }
+      if (doubleError < deltaX) {
+         error += deltaX;
+         gridY += stepY;
+      }
+   }
+};
+
+const isCornerSkillSlot = (slot) => (
+   slot.classList.contains("skill-slot--top-left") ||
+   slot.classList.contains("skill-slot--top-right") ||
+   slot.classList.contains("skill-slot--bottom-left") ||
+   slot.classList.contains("skill-slot--bottom-right")
+);
+
+const updateSkillsLinks = () => {
+   if (!skillsLinks || !skillsStage || !skillsCharacter) return;
+
+   skillsLinks.innerHTML = "";
+   if (!hasAiphItem) return;
+
+   const pixelSize = getPixelSize();
+   const stageRect = skillsStage.getBoundingClientRect();
+   const charRect = skillsCharacter.getBoundingClientRect();
+   const centerX = charRect.left + charRect.width / 2 - stageRect.left;
+   const centerY = charRect.top + charRect.height / 2 - stageRect.top;
+
+   skillsLinks.setAttribute("viewBox", `0 0 ${stageRect.width} ${stageRect.height}`);
+
+   const seen = new Set();
+
+   const topLinkY = snapToPixel(charRect.top - stageRect.top + charRect.height * 0.35, pixelSize);
+   const bottomLinkY = snapToPixel(charRect.top - stageRect.top + charRect.height * 0.6, pixelSize);
+
+   skillsSlots.querySelectorAll(".skill-slot").forEach((slot, lineIndex) => {
+      const slotRect = slot.getBoundingClientRect();
+      const slotX = slotRect.left + slotRect.width / 2 - stageRect.left;
+      const slotY = slotRect.top + slotRect.height / 2 - stageRect.top;
+
+      if (isCornerSkillSlot(slot)) {
+         const targetY = slot.classList.contains("skill-slot--bottom-left") ||
+            slot.classList.contains("skill-slot--bottom-right")
+            ? bottomLinkY
+            : topLinkY;
+         appendDiagonalPixelPath(skillsLinks, slotX, slotY, centerX, targetY, pixelSize, seen, lineIndex);
+         return;
+      }
+
+      if (slot.classList.contains("skill-slot--left") || slot.classList.contains("skill-slot--right")) {
+         const rowY = snapToPixel(slotY, pixelSize);
+         appendPixelPath(skillsLinks, centerX, rowY, slotX, rowY, pixelSize, seen, lineIndex);
+         return;
+      }
+
+      if (slot.classList.contains("skill-slot--top")) {
+         appendPixelPathVerticalFirst(skillsLinks, slotX, slotY, centerX, topLinkY, pixelSize, seen, lineIndex);
+         return;
+      }
+
+      if (slot.classList.contains("skill-slot--bottom")) {
+         appendPixelPathVerticalFirst(skillsLinks, slotX, slotY, centerX, bottomLinkY, pixelSize, seen, lineIndex);
+         return;
+      }
+
+      appendPixelPath(skillsLinks, centerX, centerY, slotX, slotY, pixelSize, seen, lineIndex);
+   });
+};
+
+const updateSkillsDisplay = () => {
+   if (!skillsSlots || !skillsCharacter) return;
+
+   skillsCharacter.setAttribute("facing", "down");
+   skillsCharacter.setAttribute("walking", "false");
+   if (skillsStage) {
+      skillsStage.classList.toggle("skills-stage--aiph", hasAiphItem);
+   }
+   skillsSlots.innerHTML = "";
+   if (skillsLinks) {
+      skillsLinks.innerHTML = "";
+   }
+
+   const acquiredSkills = SKILL_DEFINITIONS.filter((skill) => skill.has());
+   acquiredSkills.forEach((skill, index) => {
+      const slot = document.createElement("div");
+      slot.className = `skill-slot skill-slot--${SKILL_RING_POSITIONS[index]} pixel-art`;
+      slot.innerHTML = `<div class="skill-slot-icon skill-slot-icon--${skill.icon} pixel-art"></div>`;
+      skillsSlots.appendChild(slot);
+   });
+
+   if (hasAiphItem) {
+      requestAnimationFrame(() => {
+         requestAnimationFrame(updateSkillsLinks);
+      });
+   }
+};
+
+const setSkillsOverlay = (open) => {
+   if (!skillsOverlay) return;
+   skillsOverlayOpen = open;
+
+   if (open) {
+      clearMovementInput();
+      updateSkillsDisplay();
+      skillsOverlay.hidden = false;
+      requestAnimationFrame(() => {
+         skillsOverlay.classList.add("visible");
+      });
+      return;
+   }
+
+   skillsOverlay.classList.remove("visible");
+   setTimeout(() => {
+      skillsOverlay.hidden = true;
+   }, 250);
+   clearMovementInput();
+};
+
+const toggleSkillsOverlay = () => {
+   if (!gameStarted || messageBlocking) return;
+   setSkillsOverlay(!skillsOverlayOpen);
+};
+
 const createClone = () => {
    var clone = character.cloneNode(true);
    clone.classList.add("clone");
@@ -158,11 +394,12 @@ const keys = {
    40: directions.down,
 };
 
-/* Xbox / gamepad: A = Enter, B = Space, lewy analog + D-pad = ruch */
+/* Xbox / gamepad: A = Enter, B = Space, X = skille, lewy analog + D-pad = ruch */
 const STICK_DEADZONE = 0.35;
 const GAMEPAD_BUTTONS = {
    a: 0,
    b: 1,
+   x: 2,
    y: 3,
    dpadUp: 12,
    dpadDown: 13,
@@ -247,6 +484,13 @@ const pollGamepad = () => {
       document.dispatchEvent(new KeyboardEvent("keyup", { code: "Enter", key: "Enter", bubbles: true }));
    }
    gamepadButtonState.a = aPressed;
+
+   const xPressed = !!pad.buttons[GAMEPAD_BUTTONS.x]?.pressed;
+   const wasXPressed = !!gamepadButtonState.x;
+   if (gameStarted && xPressed && !wasXPressed) {
+      toggleSkillsOverlay();
+   }
+   gamepadButtonState.x = xPressed;
 };
 
 window.addEventListener("gamepadconnected", () => {
@@ -259,7 +503,7 @@ const placeCharacter = () => {
       getComputedStyle(document.documentElement).getPropertyValue('--pixel-size')
    ) || 2;
    
-   const held_direction = messageBlocking ? null : (gamepadDirection || held_directions[0]);
+   const held_direction = (messageBlocking || skillsOverlayOpen) ? null : (gamepadDirection || held_directions[0]);
    if (held_direction) {
       if (held_direction === directions.right) {x += speed;}
       if (held_direction === directions.left) {x -= speed;}
@@ -290,7 +534,7 @@ const placeCharacter = () => {
    const characterCenterY = y + tileSize;
    const pickupRadius = tileSize * 0.75;
    const tryPickup = (itemEl, itemCollected, itemX, itemY, onCollect) => {
-      if (itemCollected || !itemEl) return itemCollected;
+      if (skillsOverlayOpen || itemCollected || !itemEl) return itemCollected;
       const itemCenterX = itemX + tileSize / 2;
       const itemCenterY = itemY + tileSize / 2;
       const distance = Math.hypot(
@@ -457,7 +701,7 @@ const setHorizonsHeld = (held) => {
 };
 
 const pressDirection = (dir) => {
-   if (messageBlocking) return;
+   if (messageBlocking || skillsOverlayOpen) return;
    if (dir && held_directions.indexOf(dir) === -1) {
       held_directions.unshift(dir);
    }
@@ -488,8 +732,17 @@ document.addEventListener("keydown", (e) => {
       setHorizonsHeld(true);
       return;
    }
+   if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+      e.preventDefault();
+      toggleSkillsOverlay();
+      return;
+   }
    if (e.code === "Enter") {
       e.preventDefault();
+      if (skillsOverlayOpen) {
+         setSkillsOverlay(false);
+         return;
+      }
       dismissMessage();
       return;
    }
@@ -531,7 +784,7 @@ document.body.addEventListener("mouseup", () => {
    removePressedAll();
 })
 const handleDpadPress = (direction, click) => {
-   if (messageBlocking) return;
+   if (messageBlocking || skillsOverlayOpen) return;
    if (click) {
       isPressed = true;
    }
