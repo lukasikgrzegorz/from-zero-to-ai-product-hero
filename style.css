@@ -489,6 +489,16 @@ body {
    background-repeat: no-repeat;
 }
 
+.map-item--brain .item_sprite {
+   background-image: url("./assets/BRAIN.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--card .item_sprite {
+   background-image: url("./assets/CARD.png");
+   background-repeat: no-repeat;
+}
+
 .map-item--contract .item_sprite {
    background-image: url("./assets/CONTRACT.png");
    background-repeat: no-repeat;
@@ -632,6 +642,14 @@ body {
 
 .victory-icon--robot {
    background-image: url("./assets/ROBOT.png");
+}
+
+.victory-icon--brain {
+   background-image: url("./assets/BRAIN.png");
+}
+
+.victory-icon--card {
+   background-image: url("./assets/CARD.png");
 }
 
 .victory-icon--contract {
@@ -1295,6 +1313,8 @@ body {
 .skill-slot-icon--js { background-image: url("./assets/JS.png"); }
 .skill-slot-icon--coins { background-image: url("./assets/COINS.png"); }
 .skill-slot-icon--robot { background-image: url("./assets/ROBOT.png"); }
+.skill-slot-icon--brain { background-image: url("./assets/BRAIN.png"); }
+.skill-slot-icon--card { background-image: url("./assets/CARD.png"); }
 
 .skill-slot--top {
    grid-column: 3;

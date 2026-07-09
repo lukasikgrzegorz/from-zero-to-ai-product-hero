@@ -9,6 +9,8 @@ var mapItemHtml = document.querySelector(".map-item--html");
 var mapItemJs = document.querySelector(".map-item--js");
 var mapItemCoins = document.querySelector(".map-item--coins");
 var mapItemRobot = document.querySelector(".map-item--robot");
+var mapItemBrain = document.querySelector(".map-item--brain");
+var mapItemCard = document.querySelector(".map-item--card");
 var mapItemContract = document.querySelector(".map-item--contract");
 var mapItemDiamond = document.querySelector(".map-item--diamond");
 var mapItemDiamond2 = document.querySelector(".map-item--diamond2");
@@ -45,6 +47,8 @@ var hasHtmlItem = false;
 var hasJsItem = false;
 var hasCoinsItem = false;
 var hasRobotItem = false;
+var hasBrainItem = false;
+var hasCardItem = false;
 var hasContractItem = false;
 var hasDiamondItem = false;
 var hasDiamond2Item = false;
@@ -101,6 +105,10 @@ var coinsX = htmlX + tileSize; //1 tile right from HTML
 var coinsY = htmlY + tileSize * 2; //2 tiles below HTML
 var robotX = jsX + tileSize * 2; //2 tiles right from JS
 var robotY = jsY;
+var brainX = x + tileSize * 5 + itemCenterOffset; //5 tiles right from start
+var brainY = y + tileSize * 22 + itemCenterOffset; //22 tiles down from start
+var cardX = brainX - tileSize * 10; //10 tiles left from Second Brain
+var cardY = brainY - tileSize; //1 tile up from Second Brain
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
@@ -122,6 +130,8 @@ const SKILL_DEFINITIONS = [
    { icon: "js", has: () => hasJsItem },
    { icon: "robot", has: () => hasRobotItem },
    { icon: "coins", has: () => hasCoinsItem },
+   { icon: "brain", has: () => hasBrainItem },
+   { icon: "card", has: () => hasCardItem },
 ];
 
 const clearMovementInput = () => {
@@ -728,6 +738,32 @@ const placeCharacter = () => {
       });
    });
 
+   hasBrainItem = tryPickup(mapItemBrain, hasBrainItem, brainX, brainY, () => {
+      incrementLevel(10);
+      showVictoryMessage({
+         icon: "brain",
+         title: "Odblokowano",
+         subtitle: "Skill Second Brain",
+         hint: "Level +10",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasCardItem = tryPickup(mapItemCard, hasCardItem, cardX, cardY, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "card",
+         title: "Odblokowano",
+         subtitle: "Skilla Ambasador Programu",
+         hint: "Level +5",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
    hasContractItem = tryPickup(mapItemContract, hasContractItem, contractX, contractY, () => {
       showVictoryMessage({
          icon: "contract",
@@ -831,6 +867,8 @@ const placeCharacter = () => {
    placeMapItem(mapItemJs, hasJsItem, jsX, jsY);
    placeMapItem(mapItemCoins, hasCoinsItem, coinsX, coinsY);
    placeMapItem(mapItemRobot, hasRobotItem, robotX, robotY);
+   placeMapItem(mapItemBrain, hasBrainItem, brainX, brainY);
+   placeMapItem(mapItemCard, hasCardItem, cardX, cardY);
    placeMapItem(mapItemContract, hasContractItem, contractX, contractY);
    placeMapItem(mapItemDiamond, hasDiamondItem, diamondX, diamondY);
    placeMapItem(mapItemDiamond2, hasDiamond2Item, diamond2X, diamond2Y);
