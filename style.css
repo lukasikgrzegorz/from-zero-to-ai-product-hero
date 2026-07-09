@@ -470,6 +470,16 @@ body {
    background-repeat: no-repeat;
 }
 
+.map-item--coins .item_sprite {
+   background-image: url("./assets/COINS.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--robot .item_sprite {
+   background-image: url("./assets/ROBOT.png");
+   background-repeat: no-repeat;
+}
+
 @-webkit-keyframes itemLevitate {
    0%, 100% {
       transform: translate3d(0, 0, 0);
@@ -592,6 +602,14 @@ body {
 
 .victory-icon--js {
    background-image: url("./assets/JS.png");
+}
+
+.victory-icon--coins {
+   background-image: url("./assets/COINS.png");
+}
+
+.victory-icon--robot {
+   background-image: url("./assets/ROBOT.png");
 }
 
 .victory-title {

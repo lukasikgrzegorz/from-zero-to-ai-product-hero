@@ -6,6 +6,8 @@ var mapItemAiph3 = document.querySelector(".map-item--aiph3");
 var mapItemBrush = document.querySelector(".map-item--brush");
 var mapItemHtml = document.querySelector(".map-item--html");
 var mapItemJs = document.querySelector(".map-item--js");
+var mapItemCoins = document.querySelector(".map-item--coins");
+var mapItemRobot = document.querySelector(".map-item--robot");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
 var victoryIcon = document.querySelector(".victory-icon");
@@ -29,6 +31,8 @@ var hasAiph3Item = false;
 var hasBrushItem = false;
 var hasHtmlItem = false;
 var hasJsItem = false;
+var hasCoinsItem = false;
+var hasRobotItem = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
 var cloneSpreadSpeed = 2.5; //units per frame
@@ -46,6 +50,10 @@ var htmlX = x - tileSize * 4 + itemCenterOffset; //4 tiles left from start
 var htmlY = y + tileSize + itemCenterOffset; //1 tile down from start
 var jsX = htmlX + tileSize * 6; //6 tiles right from HTML
 var jsY = htmlY + tileSize * 2; //2 tiles below HTML
+var coinsX = htmlX + tileSize; //1 tile right from HTML
+var coinsY = htmlY + tileSize * 2; //2 tiles below HTML
+var robotX = jsX + tileSize * 2; //2 tiles right from JS
+var robotY = jsY;
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
@@ -360,12 +368,38 @@ const placeCharacter = () => {
    });
 
    hasJsItem = tryPickup(mapItemJs, hasJsItem, jsX, jsY, () => {
-      incrementLevel(4);
+      incrementLevel(3);
       showVictoryMessage({
          icon: "js",
          title: "Odblokowano",
          subtitle: "Skill Web Developer",
-         hint: "Level +4",
+         hint: "Level +3",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasCoinsItem = tryPickup(mapItemCoins, hasCoinsItem, coinsX, coinsY, () => {
+      incrementLevel(6);
+      showVictoryMessage({
+         icon: "coins",
+         title: "Odblokowano",
+         subtitle: "Skill Obsługa klienta",
+         hint: "Level +6",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasRobotItem = tryPickup(mapItemRobot, hasRobotItem, robotX, robotY, () => {
+      incrementLevel(3);
+      showVictoryMessage({
+         icon: "robot",
+         title: "Odblokowano",
+         subtitle: "Skill Sztuczna inteligencja",
+         hint: "Level +3",
          titleClass: "victory-title--secondary",
          subtitleClass: "victory-subtitle--hero",
          hintClass: "victory-hint--level",
@@ -407,6 +441,8 @@ const placeCharacter = () => {
    placeMapItem(mapItemBrush, hasBrushItem, brushX, brushY);
    placeMapItem(mapItemHtml, hasHtmlItem, htmlX, htmlY);
    placeMapItem(mapItemJs, hasJsItem, jsX, jsY);
+   placeMapItem(mapItemCoins, hasCoinsItem, coinsX, coinsY);
+   placeMapItem(mapItemRobot, hasRobotItem, robotX, robotY);
 }
 
 
