@@ -21,7 +21,11 @@ var mapItemDiamond6 = document.querySelector(".map-item--diamond6");
 var mapItemMic = document.querySelector(".map-item--mic");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
+var victoryPanel = document.querySelector(".victory-panel");
 var victoryIcon = document.querySelector(".victory-icon");
+var victorySlideshow = document.querySelector(".victory-slideshow");
+var victorySlideshowImage = document.querySelector(".victory-slideshow-image");
+var victoryRevealFx = document.querySelector(".victory-reveal-fx");
 var victoryTitle = document.querySelector(".victory-title");
 var victorySubtitle = document.querySelector(".victory-subtitle");
 var victoryHint = document.querySelector(".victory-hint");
@@ -125,6 +129,11 @@ var micY = diamond5Y;
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
+var victorySlideshowActive = false;
+var victorySlides = [];
+var victorySlideIndex = -1;
+var victoryRevealAnimating = false;
+var victoryRevealTimeout = null;
 
 const SKILL_RING_POSITIONS = [
    "top-left",
@@ -159,6 +168,167 @@ const clearMovementInput = () => {
    removePressedAll();
 };
 
+const clearVictoryRevealFx = () => {
+   victoryRevealAnimating = false;
+   if (victoryRevealTimeout) {
+      clearTimeout(victoryRevealTimeout);
+      victoryRevealTimeout = null;
+   }
+   if (victoryPanel) {
+      victoryPanel.classList.remove("victory-panel--revealing", "victory-panel--retracting");
+   }
+   if (victoryIcon) {
+      victoryIcon.classList.remove("victory-icon--bursting", "victory-icon--returning");
+   }
+   if (victorySlideshow) {
+      victorySlideshow.classList.remove(
+         "victory-slideshow--reveal-in",
+         "victory-slideshow--reveal-out",
+         "victory-slideshow--slide-out-left",
+         "victory-slideshow--slide-out-right",
+         "victory-slideshow--slide-in-left",
+         "victory-slideshow--slide-in-right"
+      );
+   }
+   if (victoryRevealFx) {
+      victoryRevealFx.classList.remove("victory-reveal-fx--active");
+   }
+};
+
+const applyVictoryViewState = (index) => {
+   victorySlideIndex = index;
+
+   if (index === -1) {
+      victoryIcon.hidden = false;
+      victorySlideshow.hidden = true;
+      victoryPanel.classList.remove("victory-panel--slideshow");
+      return;
+   }
+
+   victoryIcon.hidden = true;
+   victorySlideshow.hidden = false;
+   victoryPanel.classList.add("victory-panel--slideshow");
+   if (victorySlideshowImage) {
+      victorySlideshowImage.src = victorySlides[index];
+   }
+};
+
+const resetVictorySlideshow = () => {
+   clearVictoryRevealFx();
+   victorySlideshowActive = false;
+   victorySlides = [];
+   victorySlideIndex = -1;
+   if (victorySlideshow) {
+      victorySlideshow.hidden = true;
+   }
+   if (victoryIcon) {
+      victoryIcon.hidden = false;
+   }
+   if (victoryPanel) {
+      victoryPanel.classList.remove("victory-panel--slideshow");
+   }
+};
+
+const setVictoryView = (index) => {
+   if (!victorySlides.length || victoryRevealAnimating) return;
+
+   const maxIndex = victorySlides.length - 1;
+   const nextIndex = Math.max(-1, Math.min(index, maxIndex));
+   const prevIndex = victorySlideIndex;
+   if (nextIndex === prevIndex) return;
+
+   const goingToPhoto = prevIndex === -1 && nextIndex >= 0;
+   const goingToDiamond = prevIndex >= 0 && nextIndex === -1;
+   const switchingSlides = prevIndex >= 0 && nextIndex >= 0;
+
+   if (goingToPhoto) {
+      victoryRevealAnimating = true;
+      victoryPanel.classList.add("victory-panel--revealing");
+      victoryIcon.classList.add("victory-icon--bursting");
+      if (victoryRevealFx) {
+         victoryRevealFx.classList.add("victory-reveal-fx--active");
+      }
+
+      const preload = new Image();
+      preload.src = victorySlides[nextIndex];
+
+      victoryRevealTimeout = setTimeout(() => {
+         victorySlideIndex = nextIndex;
+         victoryIcon.hidden = true;
+         victoryIcon.classList.remove("victory-icon--bursting");
+         victorySlideshow.hidden = false;
+         victoryPanel.classList.add("victory-panel--slideshow");
+         if (victorySlideshowImage) {
+            victorySlideshowImage.src = victorySlides[nextIndex];
+         }
+         victorySlideshow.classList.add("victory-slideshow--reveal-in");
+
+         victoryRevealTimeout = setTimeout(() => {
+            clearVictoryRevealFx();
+         }, 560);
+      }, 480);
+      return;
+   }
+
+   if (goingToDiamond) {
+      victoryRevealAnimating = true;
+      victoryPanel.classList.add("victory-panel--retracting");
+      victorySlideshow.classList.add("victory-slideshow--reveal-out");
+
+      victoryRevealTimeout = setTimeout(() => {
+         applyVictoryViewState(-1);
+         victoryIcon.classList.add("victory-icon--returning");
+         victoryRevealTimeout = setTimeout(() => {
+            victoryIcon.classList.remove("victory-icon--returning");
+            victoryPanel.classList.remove("victory-panel--retracting");
+            victoryRevealAnimating = false;
+         }, 500);
+      }, 320);
+      return;
+   }
+
+   if (switchingSlides) {
+      victoryRevealAnimating = true;
+      const movingForward = nextIndex > prevIndex;
+      victorySlideshow.classList.add(
+         movingForward ? "victory-slideshow--slide-out-left" : "victory-slideshow--slide-out-right"
+      );
+
+      victoryRevealTimeout = setTimeout(() => {
+         victorySlideIndex = nextIndex;
+         if (victorySlideshowImage) {
+            victorySlideshowImage.src = victorySlides[nextIndex];
+         }
+         victorySlideshow.classList.remove(
+            "victory-slideshow--slide-out-left",
+            "victory-slideshow--slide-out-right"
+         );
+         victorySlideshow.classList.add(
+            movingForward ? "victory-slideshow--slide-in-right" : "victory-slideshow--slide-in-left"
+         );
+
+         victoryRevealTimeout = setTimeout(() => {
+            clearVictoryRevealFx();
+         }, 280);
+      }, 220);
+      return;
+   }
+
+   applyVictoryViewState(nextIndex);
+};
+
+const navigateVictorySlide = (delta) => {
+   if (!victorySlideshowActive) return;
+   setVictoryView(victorySlideIndex + delta);
+};
+
+const prepareVictorySlideshow = (slides) => {
+   if (!slides.length) return;
+   victorySlides = slides;
+   victorySlideshowActive = true;
+   setVictoryView(-1);
+};
+
 const dismissMessage = () => {
    if (!messageBlocking) return;
    messageBlocking = false;
@@ -171,6 +341,7 @@ const dismissMessage = () => {
    victoryOverlay.classList.remove("visible");
    setTimeout(() => {
       victoryOverlay.hidden = true;
+      resetVictorySlideshow();
    }, 350);
    clearMovementInput();
 };
@@ -198,8 +369,13 @@ const showVictoryMessage = ({
    titleClass = "",
    subtitleClass = "",
    hintClass = "",
+   slides = null,
 }) => {
+   resetVictorySlideshow();
    victoryIcon.className = `victory-icon victory-icon--${icon} pixel-art`;
+   if (slides && slides.length) {
+      prepareVictorySlideshow(slides);
+   }
    victoryTitle.textContent = title;
    victorySubtitle.textContent = subtitle;
    victoryHint.textContent = hint;
@@ -525,6 +701,21 @@ const pollGamepad = () => {
       gamepadActive = true;
    }
    if (!gamepadActive) {
+      gamepadDirection = null;
+      gamepadSpaceHeld = false;
+      gamepadHorizonsHeld = false;
+      return;
+   }
+
+   if (messageBlocking && victorySlideshowActive) {
+      const leftPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed;
+      const rightPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
+      const wasLeft = !!gamepadButtonState.slideshowLeft;
+      const wasRight = !!gamepadButtonState.slideshowRight;
+      if (leftPressed && !wasLeft) navigateVictorySlide(-1);
+      if (rightPressed && !wasRight) navigateVictorySlide(1);
+      gamepadButtonState.slideshowLeft = leftPressed;
+      gamepadButtonState.slideshowRight = rightPressed;
       gamepadDirection = null;
       gamepadSpaceHeld = false;
       gamepadHorizonsHeld = false;
@@ -873,6 +1064,7 @@ const placeCharacter = () => {
       incrementLevel(5);
       showVictoryMessage({
          icon: "diamond",
+         slides: ["./assets/pres01.jpeg", "./assets/pres02.jpeg"],
          title: "Osiągnięcie",
          subtitle: "Brave Meetup #3",
          hint: "Level +5",
@@ -1001,6 +1193,18 @@ document.addEventListener("keydown", (e) => {
       toggleCharacterSprite();
       return;
    }
+   if (messageBlocking && victorySlideshowActive) {
+      if (e.code === "ArrowLeft" || e.which === 37) {
+         e.preventDefault();
+         navigateVictorySlide(-1);
+         return;
+      }
+      if (e.code === "ArrowRight" || e.which === 39) {
+         e.preventDefault();
+         navigateVictorySlide(1);
+         return;
+      }
+   }
    if (e.code === "Enter") {
       e.preventDefault();
       if (skillsOverlayOpen) {
@@ -1048,7 +1252,13 @@ document.body.addEventListener("mouseup", () => {
    removePressedAll();
 })
 const handleDpadPress = (direction, click) => {
-   if (messageBlocking || skillsOverlayOpen) return;
+   if (skillsOverlayOpen) return;
+   if (messageBlocking && victorySlideshowActive) {
+      if (direction === directions.left) navigateVictorySlide(-1);
+      if (direction === directions.right) navigateVictorySlide(1);
+      return;
+   }
+   if (messageBlocking) return;
    if (click) {
       isPressed = true;
    }

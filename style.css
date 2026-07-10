@@ -584,6 +584,7 @@ body {
 
 .victory-overlay.visible {
    opacity: 1;
+   pointer-events: auto;
 }
 
 .victory-panel {
@@ -600,10 +601,12 @@ body {
       inset 0 calc(var(--pixel-size) * 2) 0 #323234,
       0 0 0 calc(var(--pixel-size) * 2) #1a1c3a;
    transform: scale(0.85);
-   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.5s steps(8, end), min-width 0.5s steps(8, end);
    box-sizing: border-box;
    width: calc(var(--pixel-size) * 103);
    min-width: calc(var(--pixel-size) * 103);
+   position: relative;
+   overflow: visible;
 }
 
 .victory-panel .victory-icon {
@@ -619,6 +622,338 @@ body {
 
 .victory-overlay.visible .victory-panel {
    transform: scale(1);
+}
+
+.victory-panel--slideshow {
+   width: calc(var(--pixel-size) * 170);
+   min-width: calc(var(--pixel-size) * 170);
+   padding: calc(var(--pixel-size) * 3);
+}
+
+.victory-panel--revealing {
+   -webkit-animation: victoryPanelPulse 0.85s steps(8, end) forwards;
+           animation: victoryPanelPulse 0.85s steps(8, end) forwards;
+}
+
+.victory-reveal-fx {
+   position: absolute;
+   inset: 0;
+   pointer-events: none;
+   z-index: 3;
+   overflow: visible;
+}
+
+.victory-reveal-flash,
+.victory-reveal-scanlines,
+.victory-reveal-sparks {
+   position: absolute;
+   inset: 0;
+   opacity: 0;
+}
+
+.victory-reveal-fx--active .victory-reveal-flash {
+   -webkit-animation: victoryRevealFlash 0.85s steps(6, end) forwards;
+           animation: victoryRevealFlash 0.85s steps(6, end) forwards;
+   background: radial-gradient(circle at 50% 28%, #ffffff 0%, #b8f4ff 18%, transparent 52%);
+}
+
+.victory-reveal-fx--active .victory-reveal-scanlines {
+   -webkit-animation: victoryRevealScan 0.85s steps(10, end) forwards;
+           animation: victoryRevealScan 0.85s steps(10, end) forwards;
+   background: repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent calc(var(--pixel-size) * 1),
+      rgba(184, 244, 255, 0.22) calc(var(--pixel-size) * 1),
+      rgba(184, 244, 255, 0.22) calc(var(--pixel-size) * 2)
+   );
+   mix-blend-mode: screen;
+}
+
+.victory-reveal-sparks {
+   display: block;
+}
+
+.victory-reveal-spark {
+   position: absolute;
+   top: 28%;
+   left: 50%;
+   width: calc(var(--pixel-size) * 2);
+   height: calc(var(--pixel-size) * 2);
+   margin: calc(var(--pixel-size) * -1) 0 0 calc(var(--pixel-size) * -1);
+   background: #ffe566;
+   box-shadow:
+      0 0 0 calc(var(--pixel-size) * 0.5) #ffffff,
+      0 0 calc(var(--pixel-size) * 3) #b8f4ff;
+   opacity: 0;
+}
+
+.victory-reveal-fx--active .victory-reveal-spark {
+   -webkit-animation: victorySparkBurst 0.7s steps(6, end) forwards;
+           animation: victorySparkBurst 0.7s steps(6, end) forwards;
+}
+
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(1) { --spark-x: -9; --spark-y: -7; animation-delay: 0.18s; background: #ffe566; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(2) { --spark-x: 10; --spark-y: -6; animation-delay: 0.2s; background: #b8f4ff; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(3) { --spark-x: -7; --spark-y: 8; animation-delay: 0.22s; background: #ffffff; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(4) { --spark-x: 8; --spark-y: 7; animation-delay: 0.19s; background: #ffe566; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(5) { --spark-x: -11; --spark-y: 0; animation-delay: 0.24s; background: #b8f4ff; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(6) { --spark-x: 11; --spark-y: 1; animation-delay: 0.21s; background: #ffffff; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(7) { --spark-x: -2; --spark-y: -10; animation-delay: 0.23s; background: #ffe566; }
+.victory-reveal-fx--active .victory-reveal-spark:nth-child(8) { --spark-x: 1; --spark-y: 10; animation-delay: 0.25s; background: #b8f4ff; }
+
+.victory-slideshow {
+   width: 100%;
+   overflow: hidden;
+}
+
+.victory-slideshow-image {
+   display: block;
+   width: 100%;
+   max-height: calc(var(--pixel-size) * 80);
+   object-fit: contain;
+}
+
+.victory-icon--bursting {
+   -webkit-animation: victoryDiamondBurst 0.48s steps(8, end) forwards !important;
+           animation: victoryDiamondBurst 0.48s steps(8, end) forwards !important;
+}
+
+.victory-icon--returning {
+   -webkit-animation: victoryDiamondReturn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+           animation: victoryDiamondReturn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.victory-slideshow--reveal-in .victory-slideshow-image {
+   -webkit-animation: victoryPhotoRevealIn 0.55s steps(8, end) forwards;
+           animation: victoryPhotoRevealIn 0.55s steps(8, end) forwards;
+}
+
+.victory-slideshow--reveal-out .victory-slideshow-image {
+   -webkit-animation: victoryPhotoRevealOut 0.32s steps(5, end) forwards;
+           animation: victoryPhotoRevealOut 0.32s steps(5, end) forwards;
+}
+
+.victory-slideshow--slide-out-left .victory-slideshow-image {
+   -webkit-animation: victoryPhotoSlideOutLeft 0.22s steps(4, end) forwards;
+           animation: victoryPhotoSlideOutLeft 0.22s steps(4, end) forwards;
+}
+
+.victory-slideshow--slide-out-right .victory-slideshow-image {
+   -webkit-animation: victoryPhotoSlideOutRight 0.22s steps(4, end) forwards;
+           animation: victoryPhotoSlideOutRight 0.22s steps(4, end) forwards;
+}
+
+.victory-slideshow--slide-in-left .victory-slideshow-image {
+   -webkit-animation: victoryPhotoSlideInLeft 0.28s steps(5, end) forwards;
+           animation: victoryPhotoSlideInLeft 0.28s steps(5, end) forwards;
+}
+
+.victory-slideshow--slide-in-right .victory-slideshow-image {
+   -webkit-animation: victoryPhotoSlideInRight 0.28s steps(5, end) forwards;
+           animation: victoryPhotoSlideInRight 0.28s steps(5, end) forwards;
+}
+
+@-webkit-keyframes victoryPanelPulse {
+   0%, 100% { filter: brightness(1); }
+   35% { filter: brightness(1.35); }
+   55% { filter: brightness(1.9); }
+   70% { filter: brightness(1.1); }
+}
+
+@keyframes victoryPanelPulse {
+   0%, 100% { filter: brightness(1); }
+   35% { filter: brightness(1.35); }
+   55% { filter: brightness(1.9); }
+   70% { filter: brightness(1.1); }
+}
+
+@-webkit-keyframes victoryRevealFlash {
+   0%, 100% { opacity: 0; }
+   38% { opacity: 0; }
+   48% { opacity: 0.95; }
+   58% { opacity: 0.25; }
+   68% { opacity: 0.7; }
+   78% { opacity: 0; }
+}
+
+@keyframes victoryRevealFlash {
+   0%, 100% { opacity: 0; }
+   38% { opacity: 0; }
+   48% { opacity: 0.95; }
+   58% { opacity: 0.25; }
+   68% { opacity: 0.7; }
+   78% { opacity: 0; }
+}
+
+@-webkit-keyframes victoryRevealScan {
+   0%, 30% { opacity: 0; transform: translateY(-100%); }
+   45% { opacity: 1; transform: translateY(0); }
+   80% { opacity: 0.6; transform: translateY(100%); }
+   100% { opacity: 0; transform: translateY(100%); }
+}
+
+@keyframes victoryRevealScan {
+   0%, 30% { opacity: 0; transform: translateY(-100%); }
+   45% { opacity: 1; transform: translateY(0); }
+   80% { opacity: 0.6; transform: translateY(100%); }
+   100% { opacity: 0; transform: translateY(100%); }
+}
+
+@-webkit-keyframes victorySparkBurst {
+   0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.5); }
+   20% { opacity: 1; transform: translate3d(0, 0, 0) scale(1.2); }
+   100% {
+      opacity: 0;
+      transform: translate3d(
+         calc(var(--spark-x) * var(--pixel-size)),
+         calc(var(--spark-y) * var(--pixel-size)),
+         0
+      ) scale(0.2);
+   }
+}
+
+@keyframes victorySparkBurst {
+   0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.5); }
+   20% { opacity: 1; transform: translate3d(0, 0, 0) scale(1.2); }
+   100% {
+      opacity: 0;
+      transform: translate3d(
+         calc(var(--spark-x) * var(--pixel-size)),
+         calc(var(--spark-y) * var(--pixel-size)),
+         0
+      ) scale(0.2);
+   }
+}
+
+@-webkit-keyframes victoryDiamondBurst {
+   0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+   25% { transform: scale(1.35) rotate(-8deg); opacity: 1; filter: brightness(2.2) drop-shadow(0 0 calc(var(--pixel-size) * 4) #b8f4ff); }
+   50% { transform: scale(0.85) rotate(12deg); opacity: 1; filter: brightness(3) drop-shadow(0 0 calc(var(--pixel-size) * 8) #ffe566); }
+   75% { transform: scale(2.2) rotate(180deg); opacity: 0.6; filter: brightness(2); }
+   100% { transform: scale(4) rotate(360deg); opacity: 0; filter: blur(calc(var(--pixel-size) * 1)); }
+}
+
+@keyframes victoryDiamondBurst {
+   0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+   25% { transform: scale(1.35) rotate(-8deg); opacity: 1; filter: brightness(2.2) drop-shadow(0 0 calc(var(--pixel-size) * 4) #b8f4ff); }
+   50% { transform: scale(0.85) rotate(12deg); opacity: 1; filter: brightness(3) drop-shadow(0 0 calc(var(--pixel-size) * 8) #ffe566); }
+   75% { transform: scale(2.2) rotate(180deg); opacity: 0.6; filter: brightness(2); }
+   100% { transform: scale(4) rotate(360deg); opacity: 0; filter: blur(calc(var(--pixel-size) * 1)); }
+}
+
+@-webkit-keyframes victoryDiamondReturn {
+   0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+   70% { transform: scale(1.12) rotate(6deg); opacity: 1; }
+   100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes victoryDiamondReturn {
+   0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+   70% { transform: scale(1.12) rotate(6deg); opacity: 1; }
+   100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@-webkit-keyframes victoryPhotoRevealIn {
+   0% {
+      opacity: 0;
+      transform: scale(0.15) rotate(-6deg);
+      filter: brightness(3) contrast(1.4);
+      clip-path: inset(48% 48% 48% 48%);
+   }
+   35% {
+      opacity: 1;
+      transform: scale(1.06) rotate(2deg);
+      filter: brightness(1.8);
+      clip-path: inset(6% 6% 6% 6%);
+   }
+   65% {
+      transform: scale(0.98) rotate(0deg);
+      filter: brightness(1.2);
+      clip-path: inset(0 0 0 0);
+   }
+   100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      filter: brightness(1);
+      clip-path: inset(0 0 0 0);
+   }
+}
+
+@keyframes victoryPhotoRevealIn {
+   0% {
+      opacity: 0;
+      transform: scale(0.15) rotate(-6deg);
+      filter: brightness(3) contrast(1.4);
+      clip-path: inset(48% 48% 48% 48%);
+   }
+   35% {
+      opacity: 1;
+      transform: scale(1.06) rotate(2deg);
+      filter: brightness(1.8);
+      clip-path: inset(6% 6% 6% 6%);
+   }
+   65% {
+      transform: scale(0.98) rotate(0deg);
+      filter: brightness(1.2);
+      clip-path: inset(0 0 0 0);
+   }
+   100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      filter: brightness(1);
+      clip-path: inset(0 0 0 0);
+   }
+}
+
+@-webkit-keyframes victoryPhotoRevealOut {
+   0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+   100% { opacity: 0; transform: scale(0.4); filter: brightness(2); }
+}
+
+@keyframes victoryPhotoRevealOut {
+   0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+   100% { opacity: 0; transform: scale(0.4); filter: brightness(2); }
+}
+
+@-webkit-keyframes victoryPhotoSlideOutLeft {
+   0% { opacity: 1; transform: translateX(0); }
+   100% { opacity: 0; transform: translateX(calc(var(--pixel-size) * -12)); }
+}
+
+@keyframes victoryPhotoSlideOutLeft {
+   0% { opacity: 1; transform: translateX(0); }
+   100% { opacity: 0; transform: translateX(calc(var(--pixel-size) * -12)); }
+}
+
+@-webkit-keyframes victoryPhotoSlideOutRight {
+   0% { opacity: 1; transform: translateX(0); }
+   100% { opacity: 0; transform: translateX(calc(var(--pixel-size) * 12)); }
+}
+
+@keyframes victoryPhotoSlideOutRight {
+   0% { opacity: 1; transform: translateX(0); }
+   100% { opacity: 0; transform: translateX(calc(var(--pixel-size) * 12)); }
+}
+
+@-webkit-keyframes victoryPhotoSlideInLeft {
+   0% { opacity: 0; transform: translateX(calc(var(--pixel-size) * 12)); }
+   100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes victoryPhotoSlideInLeft {
+   0% { opacity: 0; transform: translateX(calc(var(--pixel-size) * 12)); }
+   100% { opacity: 1; transform: translateX(0); }
+}
+
+@-webkit-keyframes victoryPhotoSlideInRight {
+   0% { opacity: 0; transform: translateX(calc(var(--pixel-size) * -12)); }
+   100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes victoryPhotoSlideInRight {
+   0% { opacity: 0; transform: translateX(calc(var(--pixel-size) * -12)); }
+   100% { opacity: 1; transform: translateX(0); }
 }
 
 .victory-icon {
