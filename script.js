@@ -18,6 +18,7 @@ var mapItemDiamond3 = document.querySelector(".map-item--diamond3");
 var mapItemDiamond4 = document.querySelector(".map-item--diamond4");
 var mapItemDiamond5 = document.querySelector(".map-item--diamond5");
 var mapItemDiamond6 = document.querySelector(".map-item--diamond6");
+var mapItemDiamond7 = document.querySelector(".map-item--diamond7");
 var mapItemMic = document.querySelector(".map-item--mic");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
@@ -64,6 +65,7 @@ var hasDiamond3Item = false;
 var hasDiamond4Item = false;
 var hasDiamond5Item = false;
 var hasDiamond6Item = false;
+var hasDiamond7Item = false;
 var hasMicItem = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
@@ -91,7 +93,6 @@ var orbPositions = [
       y: orbBaseY + tileSize * (row + 1),
    })),
 ];
-var hasOrbItems = Array(orbPositions.length).fill(false);
 var aiph2X = aiphX;
 var aiph2Y = aiphY + tileSize * 14 + tileSize / 2 - 8; //14.5 tiles below AIPH, 8px up
 var aiph3X = aiphX;
@@ -126,6 +127,18 @@ var cardX = brainX - tileSize * 10; //10 tiles left from Second Brain
 var cardY = brainY - tileSize; //1 tile up from Second Brain
 var micX = diamond5X + tileSize * 5; //5 tiles right from 2nd brain deployment
 var micY = diamond5Y;
+var diamond7X = micX; //same column as Prelegent skill
+var diamond7Y = micY + tileSize * 2; //2 tiles below Prelegent skill
+var sharedBrainOrbX = diamond7X - tileSize * 3; //3 tiles left from Shared 2nd Brain
+var sharedBrainOrbBaseY = diamond7Y + tileSize * 2; //2 tiles below Shared 2nd Brain
+var sharedBrainOrb2X = sharedBrainOrbX - orbSideOffset;
+var sharedBrainOrb2Y = sharedBrainOrbBaseY + tileSize; //first orb of second row
+orbPositions.push(
+   { x: sharedBrainOrb2X, y: sharedBrainOrb2Y },
+   { x: sharedBrainOrb2X + tileSize * 4, y: sharedBrainOrb2Y }, //4 tiles right
+   { x: sharedBrainOrb2X + tileSize * 8, y: sharedBrainOrb2Y }, //8 tiles right
+);
+var hasOrbItems = Array(orbPositions.length).fill(false);
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
@@ -1021,6 +1034,13 @@ const placeCharacter = () => {
       incrementLevel(5);
       showVictoryMessage({
          icon: "card",
+         slides: [
+            "./assets/ambs01.jpeg",
+            "./assets/ambs02.png",
+            "./assets/ambs03.png",
+            "./assets/ambs04.png",
+            "./assets/ambs05.png",
+         ],
          title: "Odblokowano",
          subtitle: "Skilla Ambasador Programu",
          hint: "Level +5",
@@ -1033,6 +1053,7 @@ const placeCharacter = () => {
    hasContractItem = tryPickup(mapItemContract, hasContractItem, contractX, contractY, () => {
       showVictoryMessage({
          icon: "contract",
+         slides: ["./assets/rasp01.jpeg"],
          title: "Osiągnięcie",
          subtitle: "Zmiana pracy",
          titleClass: "victory-title--secondary",
@@ -1109,7 +1130,7 @@ const placeCharacter = () => {
       incrementLevel(5);
       showVictoryMessage({
          icon: "diamond",
-         slides: ["./assets/pres01.jpeg", "./assets/pres02.jpeg"],
+         slides: ["./assets/pres01.jpeg", "./assets/pres02.jpeg", "./assets/pres03.jpeg"],
          title: "Osiągnięcie",
          subtitle: "Brave Meetup #3",
          hint: "Level +5",
@@ -1123,9 +1144,24 @@ const placeCharacter = () => {
       incrementLevel(3);
       showVictoryMessage({
          icon: "mic",
+         slides: ["./assets/pre01.jpeg", "./assets/pre02.jpeg", "./assets/pre03.jpeg"],
          title: "Odblokowano",
          subtitle: "Skill Prelegent",
          hint: "Level +3",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasDiamond7Item = tryPickup(mapItemDiamond7, hasDiamond7Item, diamond7X, diamond7Y, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "diamond",
+         slides: ["./assets/brain01.png", "./assets/brain02.png"],
+         title: "Osiągnięcie",
+         subtitle: "Koncepcja Shared 2nd Brain",
+         hint: "Level +5",
          titleClass: "victory-title--secondary",
          subtitleClass: "victory-subtitle--hero",
          hintClass: "victory-hint--level",
@@ -1182,6 +1218,7 @@ const placeCharacter = () => {
    placeMapItem(mapItemDiamond4, hasDiamond4Item, diamond4X, diamond4Y);
    placeMapItem(mapItemDiamond5, hasDiamond5Item, diamond5X, diamond5Y);
    placeMapItem(mapItemDiamond6, hasDiamond6Item, diamond6X, diamond6Y);
+   placeMapItem(mapItemDiamond7, hasDiamond7Item, diamond7X, diamond7Y);
    placeMapItem(mapItemMic, hasMicItem, micX, micY);
 }
 

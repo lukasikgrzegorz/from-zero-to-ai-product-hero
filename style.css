@@ -513,7 +513,8 @@ body {
 .map-item--diamond3 .item_sprite,
 .map-item--diamond4 .item_sprite,
 .map-item--diamond5 .item_sprite,
-.map-item--diamond6 .item_sprite {
+.map-item--diamond6 .item_sprite,
+.map-item--diamond7 .item_sprite {
    background-image: url("./assets/DIAMOND.png");
    background-repeat: no-repeat;
 }
