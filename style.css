@@ -511,8 +511,15 @@ body {
 .map-item--diamond .item_sprite,
 .map-item--diamond2 .item_sprite,
 .map-item--diamond3 .item_sprite,
-.map-item--diamond4 .item_sprite {
+.map-item--diamond4 .item_sprite,
+.map-item--diamond5 .item_sprite,
+.map-item--diamond6 .item_sprite {
    background-image: url("./assets/DIAMOND.png");
+   background-repeat: no-repeat;
+}
+
+.map-item--mic .item_sprite {
+   background-image: url("./assets/MIC.png");
    background-repeat: no-repeat;
 }
 
@@ -662,6 +669,10 @@ body {
 
 .victory-icon--diamond {
    background-image: url("./assets/DIAMOND.png");
+}
+
+.victory-icon--mic {
+   background-image: url("./assets/MIC.png");
 }
 
 .victory-title {
@@ -1319,6 +1330,7 @@ body {
 .skill-slot-icon--robot { background-image: url("./assets/ROBOT.png"); }
 .skill-slot-icon--brain { background-image: url("./assets/BRAIN.png"); }
 .skill-slot-icon--card { background-image: url("./assets/CARD.png"); }
+.skill-slot-icon--mic { background-image: url("./assets/MIC.png"); }
 
 .skill-slot--top {
    grid-column: 3;

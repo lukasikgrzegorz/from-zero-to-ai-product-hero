@@ -16,6 +16,9 @@ var mapItemDiamond = document.querySelector(".map-item--diamond");
 var mapItemDiamond2 = document.querySelector(".map-item--diamond2");
 var mapItemDiamond3 = document.querySelector(".map-item--diamond3");
 var mapItemDiamond4 = document.querySelector(".map-item--diamond4");
+var mapItemDiamond5 = document.querySelector(".map-item--diamond5");
+var mapItemDiamond6 = document.querySelector(".map-item--diamond6");
+var mapItemMic = document.querySelector(".map-item--mic");
 var gameMessage = document.querySelector(".game-message");
 var victoryOverlay = document.querySelector(".victory-overlay");
 var victoryIcon = document.querySelector(".victory-icon");
@@ -55,6 +58,9 @@ var hasDiamondItem = false;
 var hasDiamond2Item = false;
 var hasDiamond3Item = false;
 var hasDiamond4Item = false;
+var hasDiamond5Item = false;
+var hasDiamond6Item = false;
+var hasMicItem = false;
 var cloneSpreadMax = 32; //2 tiles left/right (1 tile = 16 units)
 var cloneSpread = 0; //current animated distance from the player
 var cloneSpreadSpeed = 2.5; //units per frame
@@ -108,8 +114,14 @@ var robotX = jsX + tileSize * 2; //2 tiles right from JS
 var robotY = jsY;
 var brainX = x + tileSize * 5 + itemCenterOffset; //5 tiles right from start
 var brainY = y + tileSize * 22 + itemCenterOffset; //22 tiles down from start
+var diamond5X = brainX - tileSize * 10; //10 tiles left from Second Brain
+var diamond5Y = brainY + tileSize * 3; //3 tiles below Second Brain
+var diamond6X = brainX; //same column as Second Brain
+var diamond6Y = brainY + tileSize * 3; //3 tiles below Second Brain
 var cardX = brainX - tileSize * 10; //10 tiles left from Second Brain
 var cardY = brainY - tileSize; //1 tile up from Second Brain
+var micX = diamond5X + tileSize * 5; //5 tiles right from 2nd brain deployment
+var micY = diamond5Y;
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
@@ -133,6 +145,7 @@ const SKILL_DEFINITIONS = [
    { icon: "coins", has: () => hasCoinsItem },
    { icon: "brain", has: () => hasBrainItem },
    { icon: "card", has: () => hasCardItem },
+   { icon: "mic", has: () => hasMicItem },
 ];
 
 const clearMovementInput = () => {
@@ -843,6 +856,45 @@ const placeCharacter = () => {
       });
    });
 
+   hasDiamond5Item = tryPickup(mapItemDiamond5, hasDiamond5Item, diamond5X, diamond5Y, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Osiągnięcie",
+         subtitle: "Wdrożenie 2nd brain w codziennej pracy",
+         hint: "Level +5",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasDiamond6Item = tryPickup(mapItemDiamond6, hasDiamond6Item, diamond6X, diamond6Y, () => {
+      incrementLevel(5);
+      showVictoryMessage({
+         icon: "diamond",
+         title: "Osiągnięcie",
+         subtitle: "Brave Meetup #3",
+         hint: "Level +5",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
+   hasMicItem = tryPickup(mapItemMic, hasMicItem, micX, micY, () => {
+      incrementLevel(3);
+      showVictoryMessage({
+         icon: "mic",
+         title: "Odblokowano",
+         subtitle: "Skill Prelegent",
+         hint: "Level +3",
+         titleClass: "victory-title--secondary",
+         subtitleClass: "victory-subtitle--hero",
+         hintClass: "victory-hint--level",
+      });
+   });
+
    const targetSpread = ((spaceHeld || gamepadSpaceHeld) && hasAiphItem) ? cloneSpreadMax : 0;
    if (cloneSpread < targetSpread) {
       cloneSpread = Math.min(cloneSpread + cloneSpreadSpeed, targetSpread);
@@ -891,6 +943,9 @@ const placeCharacter = () => {
    placeMapItem(mapItemDiamond2, hasDiamond2Item, diamond2X, diamond2Y);
    placeMapItem(mapItemDiamond3, hasDiamond3Item, diamond3X, diamond3Y);
    placeMapItem(mapItemDiamond4, hasDiamond4Item, diamond4X, diamond4Y);
+   placeMapItem(mapItemDiamond5, hasDiamond5Item, diamond5X, diamond5Y);
+   placeMapItem(mapItemDiamond6, hasDiamond6Item, diamond6X, diamond6Y);
+   placeMapItem(mapItemMic, hasMicItem, micX, micY);
 }
 
 
