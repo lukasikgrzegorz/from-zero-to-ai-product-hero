@@ -37,6 +37,7 @@ var skillsSlots = document.querySelector(".skills-slots");
 var skillsCharacter = document.querySelector(".skills-character");
 var hudLevel = document.querySelector(".hud-level");
 var startOverlay = document.querySelector(".start-overlay");
+var presentationIntro = document.querySelector(".presentation-intro");
 var gameStarted = false;
 var skillsOverlayOpen = false;
 var characterAltSprite = false;
@@ -148,8 +149,91 @@ var victoryRevealAnimating = false;
 var victoryRevealTimeout = null;
 var victorySlideshowInputLocked = false;
 var victorySlideshowInputTimeout = null;
+var presentationIntroActive = false;
+var presentationIntroCallback = null;
+var aiph3VictoryActive = false;
 
 const hasVictorySlideshow = () => victorySlides.length > 0;
+
+const isNearAiph3 = () => {
+   if (!hasAiph3Item) return false;
+   const characterCenterX = x + tileSize;
+   const characterCenterY = y + tileSize;
+   const itemCenterX = aiph3X + tileSize / 2;
+   const itemCenterY = aiph3Y + tileSize / 2;
+   return Math.hypot(characterCenterX - itemCenterX, characterCenterY - itemCenterY) < tileSize * 2.5;
+};
+
+const setupPresentationGuestFinish = () => {
+   const guest = presentationIntro?.querySelector(".presentation-walker--guest");
+   if (!guest) return;
+
+   guest.setAttribute("facing", "left");
+   guest.setAttribute("walking", "true");
+
+   const onGuestWalkEnd = (event) => {
+      if (event.animationName !== "presentationWalkGuest") return;
+      guest.setAttribute("facing", "down");
+      guest.setAttribute("walking", "false");
+      guest.removeEventListener("animationend", onGuestWalkEnd);
+   };
+
+   guest.removeEventListener("animationend", onGuestWalkEnd);
+   guest.addEventListener("animationend", onGuestWalkEnd);
+};
+
+const restartPresentationIntroAnimation = () => {
+   if (!presentationIntro) return;
+   presentationIntro.classList.remove("presentation-intro--playing");
+   void presentationIntro.offsetWidth;
+   presentationIntro.classList.add("presentation-intro--playing");
+   setupPresentationGuestFinish();
+};
+
+const dismissPresentationIntro = () => {
+   if (!presentationIntroActive || !presentationIntro) return;
+   presentationIntro.classList.remove("visible", "presentation-intro--playing");
+   setTimeout(() => {
+      presentationIntro.hidden = true;
+      presentationIntroActive = false;
+      const callback = presentationIntroCallback;
+      presentationIntroCallback = null;
+      if (callback) {
+         callback();
+      } else if (!aiph3VictoryActive) {
+         messageBlocking = false;
+      }
+   }, 350);
+};
+
+const showPresentationIntro = (onComplete = null) => {
+   if (presentationIntroActive || !presentationIntro) return;
+   presentationIntroActive = true;
+   presentationIntroCallback = onComplete;
+   messageBlocking = true;
+   clearMovementInput();
+   presentationIntro.hidden = false;
+   restartPresentationIntroAnimation();
+   requestAnimationFrame(() => {
+      presentationIntro.classList.add("visible");
+   });
+};
+
+const tryTriggerAiph3PresentationIntro = () => {
+   if (presentationIntroActive) return false;
+   if (aiph3VictoryActive) {
+      showPresentationIntro(() => {
+         aiph3VictoryActive = false;
+         dismissMessage();
+      });
+      return true;
+   }
+   if (isNearAiph3()) {
+      showPresentationIntro();
+      return true;
+   }
+   return false;
+};
 
 const lockVictorySlideshowInput = () => {
    victorySlideshowInputLocked = true;
@@ -379,6 +463,7 @@ const prepareVictorySlideshow = (slides) => {
 
 const dismissMessage = () => {
    if (!messageBlocking) return;
+   aiph3VictoryActive = false;
    messageBlocking = false;
    clearTimeout(messageTimeout);
    clearTimeout(victoryTimeout);
@@ -755,6 +840,40 @@ const pollGamepad = () => {
       return;
    }
 
+   if (presentationIntroActive) {
+      const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
+      const wasAPressed = !!gamepadButtonState.a;
+      if (aPressed && !wasAPressed) {
+         dismissPresentationIntro();
+      }
+      gamepadButtonState.a = aPressed;
+      gamepadDirection = null;
+      gamepadSpaceHeld = false;
+      gamepadHorizonsHeld = false;
+      return;
+   }
+
+   if (messageBlocking && aiph3VictoryActive) {
+      const rightPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
+      const wasRight = !!gamepadButtonState.aiph3Right;
+      if (rightPressed && !wasRight) {
+         tryTriggerAiph3PresentationIntro();
+      }
+      gamepadButtonState.aiph3Right = rightPressed;
+
+      const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
+      const wasAPressed = !!gamepadButtonState.a;
+      if (aPressed && !wasAPressed) {
+         dismissMessage();
+      }
+      gamepadButtonState.a = aPressed;
+
+      gamepadDirection = null;
+      gamepadSpaceHeld = false;
+      gamepadHorizonsHeld = false;
+      return;
+   }
+
    if (messageBlocking && hasVictorySlideshow()) {
       const leftPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed;
       const rightPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
@@ -788,6 +907,14 @@ const pollGamepad = () => {
    else dir = directionFromStick(stickX, stickY);
 
    gamepadDirection = dir;
+
+   const rightNow = dir === directions.right;
+   if (!messageBlocking && hasAiph3Item && rightNow && !gamepadButtonState.aiph3MapRight && isNearAiph3()) {
+      tryTriggerAiph3PresentationIntro();
+   }
+   if (!messageBlocking) {
+      gamepadButtonState.aiph3MapRight = rightNow;
+   }
 
    const bPressed = !!pad.buttons[GAMEPAD_BUTTONS.b]?.pressed;
    gamepadSpaceHeld = bPressed;
@@ -941,6 +1068,7 @@ const placeCharacter = () => {
    });
 
    hasAiph3Item = tryPickup(mapItemAiph3, hasAiph3Item, aiph3X, aiph3Y, () => {
+      aiph3VictoryActive = true;
       showVictoryMessage({
          icon: "aiph",
          title: "ZAPISANY NA",
@@ -1275,6 +1403,18 @@ document.addEventListener("keydown", (e) => {
       toggleCharacterSprite();
       return;
    }
+   if (presentationIntroActive) {
+      if (e.code === "Enter") {
+         e.preventDefault();
+         dismissPresentationIntro();
+      }
+      return;
+   }
+   if (messageBlocking && aiph3VictoryActive && (e.code === "ArrowRight" || e.which === 39)) {
+      e.preventDefault();
+      if (!e.repeat) tryTriggerAiph3PresentationIntro();
+      return;
+   }
    if (messageBlocking && hasVictorySlideshow()) {
       if (e.code === "ArrowLeft" || e.which === 37) {
          e.preventDefault();
@@ -1284,6 +1424,13 @@ document.addEventListener("keydown", (e) => {
       if (e.code === "ArrowRight" || e.which === 39) {
          e.preventDefault();
          if (!e.repeat) navigateVictorySlide(1);
+         return;
+      }
+   }
+   if (!messageBlocking && hasAiph3Item && (e.code === "ArrowRight" || e.which === 39)) {
+      if (!e.repeat && isNearAiph3()) {
+         e.preventDefault();
+         tryTriggerAiph3PresentationIntro();
          return;
       }
    }
@@ -1335,6 +1482,15 @@ document.body.addEventListener("mouseup", () => {
 })
 const handleDpadPress = (direction, click) => {
    if (skillsOverlayOpen) return;
+   if (presentationIntroActive) return;
+   if (messageBlocking && aiph3VictoryActive && direction === directions.right) {
+      if (!victorySlideshowInputLocked) tryTriggerAiph3PresentationIntro();
+      return;
+   }
+   if (!messageBlocking && hasAiph3Item && direction === directions.right && isNearAiph3()) {
+      if (click) tryTriggerAiph3PresentationIntro();
+      return;
+   }
    if (messageBlocking && hasVictorySlideshow()) {
       if (!victorySlideshowInputLocked && !victoryRevealAnimating) {
          if (direction === directions.left) navigateVictorySlide(-1);

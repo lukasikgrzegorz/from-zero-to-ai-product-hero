@@ -1708,3 +1708,110 @@ body {
    grid-row: 1;
 }
 
+.presentation-intro {
+   position: absolute;
+   inset: 0;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   background: rgba(26, 28, 58, 0.88);
+   z-index: 6;
+   opacity: 0;
+   pointer-events: none;
+   transition: opacity 0.35s ease;
+}
+
+.presentation-intro.visible {
+   opacity: 1;
+   pointer-events: auto;
+}
+
+.presentation-intro-title {
+   margin: calc(var(--pixel-size) * 8) calc(var(--pixel-size) * 3) 0;
+   font-family: "Press Start 2P", monospace;
+   font-size: calc(var(--pixel-size) * 5.5);
+   line-height: 1.5;
+   color: #ffe566;
+   text-align: center;
+   text-transform: uppercase;
+   letter-spacing: calc(var(--pixel-size) * 0.5);
+   text-shadow:
+      calc(var(--pixel-size) * 2) calc(var(--pixel-size) * 2) 0 #1a1c3a,
+      0 0 calc(var(--pixel-size) * 8) rgba(255, 229, 102, 0.45);
+   opacity: 0;
+}
+
+.presentation-intro--playing .presentation-intro-title {
+   -webkit-animation: presentationTitleIn 0.9s ease-out 0.15s forwards;
+           animation: presentationTitleIn 0.9s ease-out 0.15s forwards;
+}
+
+.presentation-intro-stage {
+   position: absolute;
+   left: 0;
+   right: 0;
+   bottom: calc(var(--pixel-size) * 18);
+   height: calc(var(--grid-cell) * 2);
+}
+
+.presentation-walker {
+   position: absolute;
+   bottom: 0;
+   width: calc(var(--grid-cell) * 2);
+   height: calc(var(--grid-cell) * 2);
+   overflow: hidden;
+}
+
+.presentation-walker--lead {
+   left: calc(var(--grid-cell) * -2);
+}
+
+.presentation-walker--guest {
+   left: calc(100% + var(--grid-cell));
+}
+
+.presentation-walker[walking="true"] .character_spritesheet {
+   -webkit-animation: walkAnimation 0.55s steps(4) infinite;
+           animation: walkAnimation 0.55s steps(4) infinite;
+}
+
+.presentation-intro--playing .presentation-walker--lead {
+   -webkit-animation: presentationWalkLead 6s linear forwards;
+           animation: presentationWalkLead 6s linear forwards;
+}
+
+.presentation-intro--playing .presentation-walker--guest {
+   -webkit-animation: presentationWalkGuest 3.2s linear 6s forwards;
+           animation: presentationWalkGuest 3.2s linear 6s forwards;
+}
+
+@-webkit-keyframes presentationTitleIn {
+   0% { opacity: 0; transform: translateY(calc(var(--pixel-size) * -4)); }
+   100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes presentationTitleIn {
+   0% { opacity: 0; transform: translateY(calc(var(--pixel-size) * -4)); }
+   100% { opacity: 1; transform: translateY(0); }
+}
+
+@-webkit-keyframes presentationWalkLead {
+   from { left: calc(var(--grid-cell) * -2); }
+   to { left: calc(100% + var(--grid-cell)); }
+}
+
+@keyframes presentationWalkLead {
+   from { left: calc(var(--grid-cell) * -2); }
+   to { left: calc(100% + var(--grid-cell)); }
+}
+
+@-webkit-keyframes presentationWalkGuest {
+   from { left: calc(100% + var(--grid-cell)); }
+   to { left: calc(50% - var(--grid-cell)); }
+}
+
+@keyframes presentationWalkGuest {
+   from { left: calc(100% + var(--grid-cell)); }
+   to { left: calc(50% - var(--grid-cell)); }
+}
+
