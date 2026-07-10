@@ -129,11 +129,32 @@ var micY = diamond5Y;
 var messageTimeout = null;
 var victoryTimeout = null;
 var messageBlocking = false;
-var victorySlideshowActive = false;
 var victorySlides = [];
 var victorySlideIndex = -1;
 var victoryRevealAnimating = false;
 var victoryRevealTimeout = null;
+var victorySlideshowInputLocked = false;
+var victorySlideshowInputTimeout = null;
+
+const hasVictorySlideshow = () => victorySlides.length > 0;
+
+const lockVictorySlideshowInput = () => {
+   victorySlideshowInputLocked = true;
+   gamepadButtonState.slideshowLeft = false;
+   gamepadButtonState.slideshowRight = false;
+
+   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+   const pad = pads.find((p) => p && p.connected);
+   if (pad) {
+      gamepadButtonState.slideshowLeft = !!pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed;
+      gamepadButtonState.slideshowRight = !!pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
+   }
+
+   clearTimeout(victorySlideshowInputTimeout);
+   victorySlideshowInputTimeout = setTimeout(() => {
+      victorySlideshowInputLocked = false;
+   }, 500);
+};
 
 const SKILL_RING_POSITIONS = [
    "top-left",
@@ -215,7 +236,8 @@ const applyVictoryViewState = (index) => {
 
 const resetVictorySlideshow = () => {
    clearVictoryRevealFx();
-   victorySlideshowActive = false;
+   clearTimeout(victorySlideshowInputTimeout);
+   victorySlideshowInputLocked = false;
    victorySlides = [];
    victorySlideIndex = -1;
    if (victorySlideshow) {
@@ -318,15 +340,28 @@ const setVictoryView = (index) => {
 };
 
 const navigateVictorySlide = (delta) => {
-   if (!victorySlideshowActive) return;
+   if (!hasVictorySlideshow() || victoryRevealAnimating || victorySlideshowInputLocked) return;
+
+   if (victorySlideIndex === -1) {
+      if (delta > 0) {
+         setVictoryView(0);
+      } else if (delta < 0) {
+         setVictoryView(victorySlides.length - 1);
+      }
+      return;
+   }
+
    setVictoryView(victorySlideIndex + delta);
 };
 
 const prepareVictorySlideshow = (slides) => {
    if (!slides.length) return;
    victorySlides = slides;
-   victorySlideshowActive = true;
-   setVictoryView(-1);
+   victorySlideIndex = -1;
+   victoryIcon.hidden = false;
+   victorySlideshow.hidden = true;
+   victoryPanel.classList.remove("victory-panel--slideshow");
+   lockVictorySlideshowInput();
 };
 
 const dismissMessage = () => {
@@ -707,15 +742,25 @@ const pollGamepad = () => {
       return;
    }
 
-   if (messageBlocking && victorySlideshowActive) {
+   if (messageBlocking && hasVictorySlideshow()) {
       const leftPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadLeft]?.pressed;
       const rightPressed = !!pad.buttons[GAMEPAD_BUTTONS.dpadRight]?.pressed;
       const wasLeft = !!gamepadButtonState.slideshowLeft;
       const wasRight = !!gamepadButtonState.slideshowRight;
-      if (leftPressed && !wasLeft) navigateVictorySlide(-1);
-      if (rightPressed && !wasRight) navigateVictorySlide(1);
+      if (!victoryRevealAnimating && !victorySlideshowInputLocked) {
+         if (leftPressed && !wasLeft) navigateVictorySlide(-1);
+         if (rightPressed && !wasRight) navigateVictorySlide(1);
+      }
       gamepadButtonState.slideshowLeft = leftPressed;
       gamepadButtonState.slideshowRight = rightPressed;
+
+      const aPressed = !!pad.buttons[GAMEPAD_BUTTONS.a]?.pressed;
+      const wasAPressed = !!gamepadButtonState.a;
+      if (aPressed && !wasAPressed) {
+         dismissMessage();
+      }
+      gamepadButtonState.a = aPressed;
+
       gamepadDirection = null;
       gamepadSpaceHeld = false;
       gamepadHorizonsHeld = false;
@@ -1193,15 +1238,15 @@ document.addEventListener("keydown", (e) => {
       toggleCharacterSprite();
       return;
    }
-   if (messageBlocking && victorySlideshowActive) {
+   if (messageBlocking && hasVictorySlideshow()) {
       if (e.code === "ArrowLeft" || e.which === 37) {
          e.preventDefault();
-         navigateVictorySlide(-1);
+         if (!e.repeat) navigateVictorySlide(-1);
          return;
       }
       if (e.code === "ArrowRight" || e.which === 39) {
          e.preventDefault();
-         navigateVictorySlide(1);
+         if (!e.repeat) navigateVictorySlide(1);
          return;
       }
    }
@@ -1253,9 +1298,11 @@ document.body.addEventListener("mouseup", () => {
 })
 const handleDpadPress = (direction, click) => {
    if (skillsOverlayOpen) return;
-   if (messageBlocking && victorySlideshowActive) {
-      if (direction === directions.left) navigateVictorySlide(-1);
-      if (direction === directions.right) navigateVictorySlide(1);
+   if (messageBlocking && hasVictorySlideshow()) {
+      if (!victorySlideshowInputLocked && !victoryRevealAnimating) {
+         if (direction === directions.left) navigateVictorySlide(-1);
+         if (direction === directions.right) navigateVictorySlide(1);
+      }
       return;
    }
    if (messageBlocking) return;
