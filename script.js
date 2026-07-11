@@ -1170,7 +1170,7 @@ const placeCharacter = () => {
             "./assets/ambs05.png",
          ],
          title: "Odblokowano",
-         subtitle: "Skilla Ambasador Programu",
+         subtitle: "Skill Ambasador Programu",
          hint: "Level +5",
          titleClass: "victory-title--secondary",
          subtitleClass: "victory-subtitle--hero",
