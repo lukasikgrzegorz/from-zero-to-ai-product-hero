@@ -1,6 +1,6 @@
-Cześć! Dzisiaj chciałbym podzielić się z Wami, jak dwie edycje AI Product Heroes wpłynęły na moją ścieżkę zawodową.
+Cześć! Jestem Grzegorzi i dzisiaj chciałbym podzielić się z Wami, jak dwie edycje AI Product Heroes wpłynęły na moją ścieżkę zawodową.
 
-Ale idąc zgodnie ze stylem drugiej edycji — zamiast prezentera mam w dłoni pada i zagramy w grę. Od poziomu zero do AI product hero.
+Idąc zgodnie ze stylem artystycznym drugiej edycji — zamiast prezentera mam w dłoni pada i zagramy w grę. Od poziomu zero do AI product hero.
 
 Let's play.
 
@@ -12,7 +12,7 @@ Równolegle — proste strony internetowe.
 
 Razem? Sposób na szybki zarobek.
 
-Ale oprócz tego miałem pasję do technologii. Lubiłem nowinki — to był czas, kiedy w tym temacie działo się ogromnie dużo! Chciałem być blisko. I tak trafiłem do sklepu komputerowego jako sprzedawca. Miała to być praca na chwilę. Ta chwila trwała 6 lat. Ale nauczyła mnie czegoś bezcennego — pracy z klientem.
+Ale oprócz tego miałem pasję do technologii. Lubiłem nowinki — to był czas, kiedy w tym temacie działo się ogromnie dużo! Chciałem być blisko. I tak trafiłem do sklepu komputerowego jako sprzedawca. Miała to być praca na chwilę. Ta chwila trwała 6 lat. Ale nauczyła mnie czegoś bezcennego — pracy z klientem i roziwnęła moje kompetnecję miękkie.
 
 W ciągu spędzonego tam czasu osiągnąłem wszystko, co mogłem.
 
@@ -22,21 +22,25 @@ I tak miałem zestaw skilli — jednych połączonych ze sobą bardziej, innych 
 
 Cały czas się rozwijałem, robiłem kursy... ale w jednym kierunku.
 
-AI przyspieszał pracę z kodem.
+AI przyspieszał pracę z kodem. Programowanie stało się mniej wymagające. Z jednej strony fajnie, bo szybciej dowoziłem projekty, z drugiej coraz częściej wykonywałem bardziej powtarzlene prace. 
 
-Reszta skilli? Praktycznie nieużywana.
+ I tak zapisałem się na AI Product Heroes, z myślą o tym że to jest blisko moich głównych kompetencji i będę mógł nauczyć się czegoś nowego, może urozmaicając moją dotyhcczasową pracę. 
 
-I tak zapisałem się na AI Product Heroes.
+I faktycznie - Podczas pierwszej edycji nauczyłem się wiele o budowaniu produktów. 
 
-Podczas pierwszej edycji nauczyłem się wiele o budowaniu produktów. Było to wejście na nowy poziom. Ale jedno stało się prawdziwym game changerem.
+Ale jedno stało się prawdziwym game changerem. Chłopaki uświadomili mi, że jestem generalitsą.
 
-Zrozumiałem, że mogę rozwijać swoje skille jednocześnie! Że bycie generalistą to dzisiaj ogromny plus. Że skille graficzne i miękkie zdobyte w pracy sprzedawcy — mogę połączyć!
+Zrozumiałem, że mogę rozwijać swoje skille jednocześnie! Że bycie generalistą to dzisiaj ogromny plus. Że wszystkie skille mogę połączyć!
 
-A to otworzyło mi drogę do szybszego expienia. Nie musiałem ograniczać się do jednej ścieżki!
+A to otworzyło mi drogę do szybszego expienia. Nie musiałem ograniczać się do jednej ścieżki! 
 
 Praca programisty przestała mi wystarczyć.
 
-Zmotywowałem się do zmiany zawodu — do takiego, w którym wykorzystam je w pełni.
+Zacząłem zauważać, że to faktycznie działa.
+
+Kurs zmotywował mnie do zmiany zawodu — do takiego, w którym  wykorzystam w pełni wszystkie swoje umiejętności.
+
+---
 
 I tak 8 miesięcy temu rozpocząłem pracę bliżej produktu.
 
